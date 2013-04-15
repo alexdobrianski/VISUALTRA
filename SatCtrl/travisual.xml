@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Universe>
+	<Object>
+		<type>Earth</type>
+		<X>-1</X>
+		<Y>-1</Y>
+		<Z>0</Z>
+	</Object>
+	<Object>
+		<type>Sun</type>
+		<X>0</X>
+		<Y>0</Y>
+		<Z>0</Z>
+	</Object>
+	<Object>
+		<type>Moon</type>
+		<X>0</X>
+		<Y>0</Y>
+		<Z>0</Z>
+	</Object>
+</Universe>
+
