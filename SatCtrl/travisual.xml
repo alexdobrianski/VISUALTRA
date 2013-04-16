@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Universe>
-	<Object>
-		<type>Earth</type>
-		<X>-1</X>
-		<Y>-1</Y>
-		<Z>0</Z>
-	</Object>
-	<Object>
-		<type>Sun</type>
-		<X>0</X>
-		<Y>0</Y>
-		<Z>0</Z>
-	</Object>
-	<Object>
-		<type>Moon</type>
-		<X>0</X>
-		<Y>0</Y>
-		<Z>0</Z>
-	</Object>
-</Universe>
-
+<Universe>
+	<Object>
+		<type>Earth</type>
+		<X>-133575034253.12651</X>
+		<Y>-63489883479.175606</Y>
+		<Z>-27532593502.118389</Z>
+		<R>6371000</R>
+	</Object>
+	<Object>
+		<type>Sun</type>
+		<X>-93012774.821298748</X>
+		<Y>-345354120.29632998</Y>
+		<Z>-158948217.74056888</Z>
+                <R>696342000</R>
+	</Object>
+	<Object>
+		<type>Moon</type>
+		<X>-133672655873.495</X>
+		<Y>-63119211087.479111</Y>
+		<Z>-27405924630.95005</Z>
+                <R>1737100</R>
+	</Object>
+</Universe>
+
