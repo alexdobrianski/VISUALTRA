@@ -126,6 +126,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	bg.setApplicationBounds(bounds);
 	objScale.addChild(bg);
 
+        /*
 	// Create a Earth Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
         Color3f eColorEarth    = new Color3f(.0f, .0f, .0f);
@@ -150,7 +151,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         tg.addChild(sphEarth);
         objScale.addChild(tg);
 	//objScale.addChild(sph);
-        
+
         // Create a Moon Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
         Color3f eColorMoon    = new Color3f(.0f, .0f, .0f);
@@ -163,7 +164,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         aMoon.setTexture(texMoon);
         TextureAttributes texAttrMoon = new TextureAttributes();
         texAttrMoon.setTextureMode(TextureAttributes.COMBINE);//.COMBINE);//.BLEND);//.MODULATE);
-        aMoon.setTextureAttributes(texAttr);
+        aMoon.setTextureAttributes(texAttrMoon);
 	Sphere sphMoon = new Sphere((float)MoonR, Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS, 180, aMoon);//.GENERATE_NORMALS, 180, a);
         
         Transform3D LocationMoon = new Transform3D();
@@ -172,7 +173,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         TransformGroup tgMoon = new TransformGroup(LocationMoon);
         tgMoon.addChild(sphMoon);
         objScale.addChild(tgMoon);
-
+*/
 	// Create the transform group node for the each light and initialize
 	// it to the identity.  Enable the TRANSFORM_WRITE capability so that
 	// our behavior code can modify it at runtime.  Add them to the root
@@ -551,7 +552,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         u.addBranchGraph(scene);
 
         Locale locale = new Locale(u);
-        BranchGroup sceneBranchGroup = m_SceneBranchGroup = new BranchGroup();
+        m_SceneBranchGroup = new BranchGroup();
         // note that we are creating a TG *above* the TG
         // the is being controlled by the mouse behaviors.
         // The SUN mouse translate behavior would fail in this
@@ -565,6 +566,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         objTrans1.getTransform(t3d);
         t3d.setEuler(new Vector3d(0.9, 0.8, 0.3));
         objTrans1.setTransform(t3d);
+        
         TransformGroup objTrans = new TransformGroup();
         objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
@@ -592,8 +594,55 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         mouseTrans.setMaxTranslate(new Point3d(4, 4, 4));
         mouseTrans.setSchedulingBounds(getApplicationBounds());
         objTrans.addChild(mouseTrans);
-        objTrans.addChild(new ColorCube(0.5));
+        //objTrans.addChild(new ColorCube(0.5));
         //objTrans.addChild(scene);
+ /*       
+       	// Create a Earth Sphere object, generate one copy of the sphere,
+	// and add it into the scene graph.
+        Color3f eColorEarth    = new Color3f(.0f, .0f, .0f);
+	Color3f sColorEarth    = new Color3f(1.0f, 1.0f, 1.0f);
+	Color3f objColorEarth  = new Color3f(.90f, .90f, .90f);
+	Material m = new Material(objColorEarth, eColorEarth, objColorEarth, sColorEarth, 100.0f);
+        //Material m = new Material();
+	Appearance a = new Appearance();
+	m.setLightingEnable(true);
+	a.setMaterial(m);
+        a.setTexture(texEarth);
+        TextureAttributes texAttr = new TextureAttributes();
+        texAttr.setTextureMode(TextureAttributes.COMBINE);//.COMBINE);//.BLEND);//.MODULATE);
+        a.setTextureAttributes(texAttr);
+	Sphere sphEarth = new Sphere((float)EarthR, Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS, 180, a);//.GENERATE_NORMALS, 180, a);
+        
+        // position of the earth
+        Transform3D LocationEarth = new Transform3D();
+        Vector3f vectorEarth = new Vector3f((float)EarthX, (float)EarthY , (float)EarthZ);
+        LocationEarth.setTranslation(vectorEarth);
+        TransformGroup tg = new TransformGroup(LocationEarth);
+        tg.addChild(sphEarth);
+        objTrans.addChild(tg);
+
+*/
+                // Create a Moon Sphere object, generate one copy of the sphere,
+	// and add it into the scene graph.
+        Color3f eColorMoon    = new Color3f(.0f, .0f, .0f);
+	Color3f sColorMoon    = new Color3f(1.0f, 1.0f, 1.0f);
+	Color3f objColorMoon  = new Color3f(.90f, .90f, .90f);
+	Material mMoon = new Material(objColorMoon, eColorMoon, objColorMoon, sColorMoon, 100.0f);
+	Appearance aMoon = new Appearance();
+	//aMoon.setLightingEnable(true);
+	aMoon.setMaterial(mMoon);
+        aMoon.setTexture(texMoon);
+        TextureAttributes texAttrMoon = new TextureAttributes();
+        texAttrMoon.setTextureMode(TextureAttributes.COMBINE);//.COMBINE);//.BLEND);//.MODULATE);
+        aMoon.setTextureAttributes(texAttrMoon);
+	Sphere sphMoon = new Sphere((float)MoonR, Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS, 180, aMoon);//.GENERATE_NORMALS, 180, a);
+        
+        Transform3D LocationMoon = new Transform3D();
+        Vector3f vectorMoon = new Vector3f((float)MoonX, (float)MoonY, (float)MoonZ);
+        LocationMoon.setTranslation(vectorMoon);
+        TransformGroup tgMoon = new TransformGroup(LocationMoon);
+        tgMoon.addChild(sphMoon);
+        objTrans.addChild(tgMoon);
         
         // create some axis for the world to show it has been rotated
         ColorCube axis = new ColorCube(5.0);
@@ -602,7 +651,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         axis.setAppearance(app);
         objTrans1.addChild(axis);
         objTrans1.addChild(objTrans);
-        sceneBranchGroup.addChild(objTrans1);
+        m_SceneBranchGroup.addChild(objTrans1);
         
         
         
@@ -637,10 +686,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         
         Background background = null;//createBackground();
         if (background != null)
-            sceneBranchGroup.addChild(background);
+            m_SceneBranchGroup.addChild(background);
         // m_Java3dTree.recursiveApplyCapability(sceneBranchGroup);
         //m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
-        locale.addBranchGraph(sceneBranchGroup);
+        locale.addBranchGraph(m_SceneBranchGroup);
         addViewBranchGroup(locale, viewBranchGroup);
         
         
