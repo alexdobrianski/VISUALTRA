@@ -46,7 +46,9 @@ import java.awt.event.MouseEvent;
 import com.sun.j3d.utils.geometry.ColorCube;
   
 
-public class visualtra extends Applet {
+public class visualtra extends Applet 
+implements ScaleChangeListener, RotationChangeListener, TranslationChangeListener 
+{
 
     private double EarthX;
     private double EarthY;
@@ -111,14 +113,13 @@ public class visualtra extends Applet {
         TransformGroup objScale = new TransformGroup();
         Transform3D t3d = new Transform3D();
         //Vector3f vector = new Vector3f(-.2f,.1f , -.4f);
-        t3d.setScale(0.6);
+        t3d.setScale(0.8);
         //t3d.setTranslation(vector);
         objScale.setTransform(t3d);
         objRoot.addChild(objScale);
 
 	// Create a bounds for the background and lights
-	BoundingSphere bounds =
-	    new BoundingSphere(new Point3d(0.0,0.0,0.0), 10000.0);
+	BoundingSphere bounds =  new BoundingSphere(new Point3d(0.0,0.0,0.0), 100.0);
 
 	// Set up the background
 	Background bg = new Background(bgColor);
@@ -305,7 +306,7 @@ public class visualtra extends Applet {
 	objScale.addChild(translator);
         */
         // mouse simple
-        /*
+       /*
         TransformGroup viewTransformGroup =
                 u.getViewingPlatform().getViewPlatformTransform();
         KeyNavigatorBehavior keyInteractor =
@@ -318,56 +319,12 @@ public class visualtra extends Applet {
         behavior.setTransformGroup(viewTransformGroup); 
         objRoot.addChild(behavior); 
         behavior.setSchedulingBounds(bounds);
-        */
+       */
         /*
-        TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
-        mouseScale.setMinScale(new Point3d(0.5, 0.5, 0.5));
-        mouseScale.setMaxScale(new Point3d(2, 2, 2));
-        mouseScale.setObject(objRoot);
-        mouseScale.setChangeListener(this);
-        mouseScale.setSchedulingBounds(getApplicationBounds());
-        objRoot.addChild(mouseScale);
-        // create the mouse rotate behavior
-        TornadoMouseRotate mouseRotate = new TornadoMouseRotate(0.001, 0.001);
-        mouseRotate.setInvert(true);
-        mouseRotate.setObject(objRoot);
-        mouseRotate.setChangeListener(this);
-        mouseRotate.setSchedulingBounds(getApplicationBounds());
-        objRoot.addChild(mouseRotate);
-        // create the mouse translate behavior and set limits
-        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.005f);
-        mouseTrans.setObject(objRoot);
-        mouseTrans.setChangeListener(this);
-        mouseTrans.setMinTranslate(new Point3d(-4, -4, -4));
-        mouseTrans.setMaxTranslate(new Point3d(4, 4, 4));
-        mouseTrans.setSchedulingBounds(getApplicationBounds());
-        objRoot.addChild(mouseTrans);
-    */
-        // Let Java 3D perform optimizations on this scene graph.
-        objRoot.compile();
-
-	return objRoot;
-    }
-    /*
-    protected BranchGroup createSceneBranchGroup() 
-    {
-        BranchGroup objRoot = super.createSceneBranchGroup();
-        // note that we are creating a TG *above* the TG
-        // the is being controlled by the mouse behaviors.
-        // The SUN mouse translate behavior would fail in this
-        // instance as all movement would be in the X-Y plane
-        // irrespective of any TG above the object.
-        // The TornadoMouseTranslate behavior always moves an object
-        // parrallel to the image plane
-        TransformGroup objTrans1 = new TransformGroup();
-        Transform3D t3d = new Transform3D();
-        objTrans1.getTransform(t3d);
-        t3d.setEuler(new Vector3d(0.9, 0.8, 0.3));
-        objTrans1.setTransform(t3d);
         TransformGroup objTrans = new TransformGroup();
         objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        // create the mouse scale behavior and set limits
+        
         TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
         mouseScale.setMinScale(new Point3d(0.5, 0.5, 0.5));
         mouseScale.setMaxScale(new Point3d(2, 2, 2));
@@ -390,7 +347,61 @@ public class visualtra extends Applet {
         mouseTrans.setMaxTranslate(new Point3d(4, 4, 4));
         mouseTrans.setSchedulingBounds(getApplicationBounds());
         objTrans.addChild(mouseTrans);
+        objTrans.addChild(objRoot);
+        */
+        // Let Java 3D perform optimizations on this scene graph.
+        objRoot.compile();
+
+	return objRoot;
+    }
+    
+    protected BranchGroup createSceneBranchGroup(BranchGroup scene) 
+    {
+        //BranchGroup objRoot = super.createSceneBranchGroup();
+        BranchGroup objRoot =  m_SceneBranchGroup = new BranchGroup();
+        // note that we are creating a TG *above* the TG
+        // the is being controlled by the mouse behaviors.
+        // The SUN mouse translate behavior would fail in this
+        // instance as all movement would be in the X-Y plane
+        // irrespective of any TG above the object.
+        // The TornadoMouseTranslate behavior always moves an object
+        // parrallel to the image plane
+        
+        TransformGroup objTrans1 = new TransformGroup();
+        Transform3D t3d = new Transform3D();
+        objTrans1.getTransform(t3d);
+        t3d.setEuler(new Vector3d(0.9, 0.8, 0.3));
+        objTrans1.setTransform(t3d);
+        TransformGroup objTrans = new TransformGroup();
+        objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        
+        // create the mouse scale behavior and set limits
+        TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
+        mouseScale.setMinScale(new Point3d(0.1, 0.1, 0.1));
+        mouseScale.setMaxScale(new Point3d(10, 10, 10));
+        mouseScale.setObject(objTrans);
+        mouseScale.setChangeListener(this);
+        mouseScale.setSchedulingBounds(getApplicationBounds());
+        objTrans.addChild(mouseScale);
+        // create the mouse rotate behavior
+        TornadoMouseRotate mouseRotate = new TornadoMouseRotate(0.001, 0.001);
+        mouseRotate.setInvert(true);
+        mouseRotate.setObject(objTrans);
+        mouseRotate.setChangeListener(this);
+        mouseRotate.setSchedulingBounds(getApplicationBounds());
+        objTrans.addChild(mouseRotate);
+        // create the mouse translate behavior and set limits
+        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.005f);
+        mouseTrans.setObject(objTrans);
+        mouseTrans.setChangeListener(this);
+        mouseTrans.setMinTranslate(new Point3d(-4, -4, -4));
+        mouseTrans.setMaxTranslate(new Point3d(4, 4, 4));
+        mouseTrans.setSchedulingBounds(getApplicationBounds());
+        objTrans.addChild(mouseTrans);
         objTrans.addChild(new ColorCube(0.5));
+        //objTrans.addChild(scene);
+        
         // create some axis for the world to show it has been rotated
         ColorCube axis = new ColorCube(5.0);
         Appearance app = new Appearance();
@@ -399,8 +410,9 @@ public class visualtra extends Applet {
         objTrans1.addChild(axis);
         objTrans1.addChild(objTrans);
         objRoot.addChild(objTrans1);
+        
         return objRoot;
-    }*/
+    }
     protected Bounds getApplicationBounds() 
     {
         if (m_ApplicationBounds == null)
@@ -420,10 +432,10 @@ public class visualtra extends Applet {
         try 
         {  
 
-            //File fXmlFile = new File("SatCtrl/travisual.xml");  
+            File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml");
-            InputStream fXmlFile = url.openStream();
+            //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml");
+            //InputStream fXmlFile = url.openStream();
             
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();  
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();  
@@ -503,17 +515,15 @@ public class visualtra extends Applet {
         
         try 
         {
-            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
-            //TextureLoader texLoader =  new TextureLoader( "Earth-Color_960_Koord.jpg", this);
-            URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
+            //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
             texEarth = texLoader.getTexture();
             
             
-            //texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
-            //texLoader =  new TextureLoader( "moon___map_by_horizoied-d3y3lvg.jpg", this);
-            ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            texLoader =  new TextureLoader( ur, this);
+            texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
+            //ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //texLoader =  new TextureLoader( ur, this);
             texMoon = texLoader.getTexture();
         
             //URL myURl = URL("http://192.168.0.102/SatCtrl/Map_Earth_2100_by_JamesVF.jpg");
@@ -523,43 +533,138 @@ public class visualtra extends Applet {
             e.printStackTrace();  
         }
 
-	setLayout(new BorderLayout());
-        GraphicsConfiguration config =
-           SimpleUniverse.getPreferredConfiguration();
+	//setLayout(new BorderLayout());
+        GraphicsConfiguration config = SimpleUniverse.getPreferredConfiguration();
 
-        //Canvas3D c = new Canvas3D(config);
         Canvas3D c = new Canvas3D(config);
+
         addCanvas3D(c);
         c.setSize(100, 100);
-	add("Center", c);
-        //add("Top", c);
+	//add("Center", c);
 
 	u = new SimpleUniverse(c);
 	BranchGroup scene = createSceneGraph(u);
-
         // This will move the ViewPlatform back a bit so the
         // objects in the scene can be viewed.
-        u.getViewingPlatform().setNominalViewingTransform();
-	
+       //u.getViewingPlatform().setNominalViewingTransform();
+        
         u.addBranchGraph(scene);
+
         Locale locale = new Locale(u);
-        BranchGroup sceneBranchGroup = createSceneBranchGroup();
+        BranchGroup sceneBranchGroup = m_SceneBranchGroup = new BranchGroup();
+        // note that we are creating a TG *above* the TG
+        // the is being controlled by the mouse behaviors.
+        // The SUN mouse translate behavior would fail in this
+        // instance as all movement would be in the X-Y plane
+        // irrespective of any TG above the object.
+        // The TornadoMouseTranslate behavior always moves an object
+        // parrallel to the image plane
+        
+        TransformGroup objTrans1 = new TransformGroup();
+        Transform3D t3d = new Transform3D();
+        objTrans1.getTransform(t3d);
+        t3d.setEuler(new Vector3d(0.9, 0.8, 0.3));
+        objTrans1.setTransform(t3d);
+        TransformGroup objTrans = new TransformGroup();
+        objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        objTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        
+        // create the mouse scale behavior and set limits
+        TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
+        mouseScale.setMinScale(new Point3d(0.1, 0.1, 0.1));
+        mouseScale.setMaxScale(new Point3d(10, 10, 10));
+        mouseScale.setObject(objTrans);
+        mouseScale.setChangeListener(this);
+        mouseScale.setSchedulingBounds(getApplicationBounds());
+        objTrans.addChild(mouseScale);
+        // create the mouse rotate behavior
+        TornadoMouseRotate mouseRotate = new TornadoMouseRotate(0.001, 0.001);
+        mouseRotate.setInvert(true);
+        mouseRotate.setObject(objTrans);
+        mouseRotate.setChangeListener(this);
+        mouseRotate.setSchedulingBounds(getApplicationBounds());
+        objTrans.addChild(mouseRotate);
+        // create the mouse translate behavior and set limits
+        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.005f);
+        mouseTrans.setObject(objTrans);
+        mouseTrans.setChangeListener(this);
+        mouseTrans.setMinTranslate(new Point3d(-4, -4, -4));
+        mouseTrans.setMaxTranslate(new Point3d(4, 4, 4));
+        mouseTrans.setSchedulingBounds(getApplicationBounds());
+        objTrans.addChild(mouseTrans);
+        objTrans.addChild(new ColorCube(0.5));
+        //objTrans.addChild(scene);
+        
+        // create some axis for the world to show it has been rotated
+        ColorCube axis = new ColorCube(5.0);
+        Appearance app = new Appearance();
+        app.setPolygonAttributes(new PolygonAttributes( PolygonAttributes.POLYGON_LINE, PolygonAttributes.CULL_NONE, 0));
+        axis.setAppearance(app);
+        objTrans1.addChild(axis);
+        objTrans1.addChild(objTrans);
+        sceneBranchGroup.addChild(objTrans1);
+        
+        
+        
+        ViewPlatform vp = new ViewPlatform();
+        vp.setViewAttachPolicy(View.RELATIVE_TO_FIELD_OF_VIEW);
+        vp.setActivationRadius(getViewPlatformActivationRadius());
+        
+        
+        
+        BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
+        
+        View view = new View();
+        PhysicalBody pb = new PhysicalBody();
+        PhysicalEnvironment pe = new PhysicalEnvironment();
+        //AudioDevice audioDevice = createAudioDevice(pe);
+        //if (audioDevice != null) 
+        //{
+        //    pe.setAudioDevice(audioDevice);
+        //        audioDevice.initialize();
+        //}
+        view.setPhysicalEnvironment(pe);
+        view.setPhysicalBody(pb);
+        if (vp != null)
+            view.attachViewPlatform(vp);
+        view.setBackClipDistance(getBackClipDistance());
+        view.setFrontClipDistance(getFrontClipDistance());
+        Canvas3D c3d = createCanvas3D();
+        view.addCanvas3D(c3d);
+        addCanvas3D(c3d);
+        
+        
+        
+        Background background = null;//createBackground();
+        if (background != null)
+            sceneBranchGroup.addChild(background);
+        // m_Java3dTree.recursiveApplyCapability(sceneBranchGroup);
+        //m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
+        locale.addBranchGraph(sceneBranchGroup);
+        addViewBranchGroup(locale, viewBranchGroup);
+        
+        
+  /*      
+        Locale locale = new Locale(u);
+        BranchGroup sceneBranchGroup = createSceneBranchGroup(scene);
+        
         ViewPlatform vp = createViewPlatform();
         BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
         createView(vp);
         Background background = createBackground();
         if (background != null)
             sceneBranchGroup.addChild(background);
-        //    m_Java3dTree.recursiveApplyCapability(sceneBranchGroup);
-        //  m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
+        // m_Java3dTree.recursiveApplyCapability(sceneBranchGroup);
+        //m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
         locale.addBranchGraph(sceneBranchGroup);
         addViewBranchGroup(locale, viewBranchGroup);
+    */    
     }
-    protected BranchGroup createSceneBranchGroup() 
-    {
-        m_SceneBranchGroup = new BranchGroup();
-        return m_SceneBranchGroup;
-    }
+    //protected BranchGroup createSceneBranchGroup() 
+    //{
+    //    m_SceneBranchGroup = new BranchGroup();
+    //    return m_SceneBranchGroup;
+    //}
     protected void addViewBranchGroup(Locale locale, BranchGroup bg) 
     {
         locale.addBranchGraph(bg);
@@ -698,30 +803,7 @@ public class visualtra extends Applet {
     {
         return null;
     }
-    /*
-    protected View createView(ViewPlatform vp) 
-    {
-        View view = new View();
-        PhysicalBody pb = createPhysicalBody();
-        PhysicalEnvironment pe = createPhysicalEnvironment();
-        AudioDevice audioDevice = createAudioDevice(pe);
-        if (audioDevice != null) 
-        {
-            pe.setAudioDevice(audioDevice);
-            audioDevice.initialize();
-        }
-        view.setPhysicalEnvironment(pe);
-        view.setPhysicalBody(pb);
-        if (vp != null)
-            view.attachViewPlatform(vp);
-        view.setBackClipDistance(getBackClipDistance());
-        view.setFrontClipDistance(getFrontClipDistance());
-        Canvas3D c3d = createCanvas3D();
-        view.addCanvas3D(c3d);
-        addCanvas3D(c3d);
-        return view;
-    }
-  */
+    
     protected void addCanvas3D(Canvas3D c3d) 
     {
         setLayout(new BorderLayout());
@@ -1544,7 +1626,8 @@ class TornadoMouseScale extends TornadoMouseBehavior
                 delta.z = m_Delta;
             else if (vector.z < -m_Threshold)
                     delta.z = -m_Delta;
-            Vector3d objectScale = new Vector3d(vScale.x + delta.x, vScale.y + delta.y, vScale.z + delta.z);
+            //Vector3d objectScale = new Vector3d(vScale.x + delta.x, vScale.y + delta.y, vScale.z + delta.z);
+            Vector3d objectScale = new Vector3d(vScale.x + delta.x, vScale.x + delta.x, vScale.x + delta.x);
             if (objectScale.x >= m_MinScale.x && objectScale.y >= m_MinScale.y && objectScale.z >= m_MinScale.z) 
             {
                 if (objectScale.x <= m_MaxScale.x && objectScale.y <= m_MaxScale.y && objectScale.z <= m_MaxScale.z) 
