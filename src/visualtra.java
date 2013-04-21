@@ -51,8 +51,8 @@ import java.awt.event.*;
 //import java.awt.event.ActionListener;
   
 
-public class visualtra extends Applet 
-implements ScaleChangeListener, RotationChangeListener, TranslationChangeListener, ActionListener
+public class visualtra extends Applet  
+implements ScaleChangeListener, RotationChangeListener, TranslationChangeListener, ActionListener, Runnable
 {
     private double CenterX;
     private double CenterY;
@@ -99,6 +99,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     TextField m_ScaleFieldZ = null;
     TextField m_ScaleFieldY = null;
     TextField m_ScaleFieldX = null;
+    TextField m_TimerCtrl = null;
+    int TimerCount = 0;
     private static int m_kWidth = 1400;
     private static int m_kHeight = 800;
     protected Bounds m_ApplicationBounds = null;
@@ -106,11 +108,39 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     Button m_EarthView = null;
     Button m_MoonView = null;
     boolean ButtonPressed = false;
+    private Thread XMLTimerread;
+    public int time =1000;
+    
+    protected Vector3f m_OriginalPosition = null;
+    
      
     public void actionPerformed(ActionEvent e) 
     {
         ButtonPressed = true;
- 
+        
+        //TransformGroup tg = getTransformGroup();
+        //if (tg != null) 
+        //{
+        //    // scale the mouse movements so the objects roughly tracks with the
+        //    // mouse
+        //    vector.scale(m_Scale);
+        //    Vector3d vTranslation = new Vector3d();
+        //    tg.getTransform(m_Transform3D);
+        //    m_Transform3D.get(vTranslation);
+        //    vTranslation.x += vector.x;
+        //    vTranslation.y += vector.y;
+        //    vTranslation.z += vector.z;
+        //    if (vTranslation.x >= m_MinTranslate.x && vTranslation.y >= m_MinTranslate.y && vTranslation.z >= m_MinTranslate.z) 
+        //    {
+        //        if (vTranslation.x <= m_MaxTranslate.x && vTranslation.y <= m_MaxTranslate.y && vTranslation.z <= m_MaxTranslate.z) 
+        //        {
+        //            m_Transform3D.setTranslation(vTranslation);
+        //            applyTransform();
+        //            if (m_Listener != null)
+        //                ((TranslationChangeListener) m_Listener).onTranslate(m_Object, vTranslation);
+        //        }
+        //    }
+        //}
     }
 
     public BranchGroup createSceneGraph(SimpleUniverse u) 
@@ -418,15 +448,15 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     public visualtra() {
     }
 
-    public void init() 
+    public void ReadXML()
     {
         try 
         {  
-
-            //File fXmlFile = new File("SatCtrl/travisual.xml");  
+            File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml");
-            InputStream fXmlFile = url.openStream();
+            //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml");
+            //URL url = new URL("http://192.168.0.102/SatCtrl/travisual.xml");
+            //InputStream fXmlFile = url.openStream();
             
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();  
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();  
@@ -499,22 +529,24 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         catch (Exception e) 
         {  
             e.printStackTrace();  
-        }   
-        //MoonX -=EarthX;MoonY -=EarthY;MoonZ -=EarthZ;
-        //SunX -=EarthX;SunY -=EarthY;SunZ -=EarthZ;
-        //EarthX = 0.0;EarthY=0.0;EarthZ=0.0;
+        }
+    }
+    public void init() 
+    {
+        ReadXML();
         CenterX=EarthX;CenterY=EarthY;CenterZ=EarthZ;
         try 
         {
-            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
-            URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
+            //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
+            //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
             texEarth = texLoader.getTexture();
             
-            
-            //texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
-            ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            texLoader =  new TextureLoader( ur, this);
+            texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
+            //ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //texLoader =  new TextureLoader( ur, this);
             texMoon = texLoader.getTexture();
         
             //URL myURl = URL("http://192.168.0.102/SatCtrl/Map_Earth_2100_by_JamesVF.jpg");
@@ -537,7 +569,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	BranchGroup scene = createSceneGraph(u);
         // This will move the ViewPlatform back a bit so the
         // objects in the scene can be viewed.
-       //u.getViewingPlatform().setNominalViewingTransform();
+        //u.getViewingPlatform().setNominalViewingTransform();
         
         u.addBranchGraph(scene);
 
@@ -556,7 +588,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         TransformGroup objTrans1 = new TransformGroup();
         Transform3D t3d = new Transform3D();
         objTrans1.getTransform(t3d);
+        ////////////////////////////////////////////////////////////////////////////////////////
         // that is initial rotation
+        ////////////////////////////////////////////////////////////////////////////////////////
         //t3d.setEuler(new Vector3d(0.9, 0.8, 0.3));
         t3d.setEuler(new Vector3d(0.0, 0.0, 0.0));
         objTrans1.setTransform(t3d);
@@ -615,8 +649,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         tg.addChild(sphEarth);
         objTrans.addChild(tg);
 
-
-                // Create a Moon Sphere object, generate one copy of the sphere,
+        // Create a Moon Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
         Color3f eColorMoon    = new Color3f(.0f, .0f, .0f);
 	Color3f sColorMoon    = new Color3f(1.0f, 1.0f, 1.0f);
@@ -637,7 +670,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         TransformGroup tgMoon = new TransformGroup(LocationMoon);
         tgMoon.addChild(sphMoon);
         objTrans.addChild(tgMoon);
-        
         
         // Create a Sun Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
@@ -772,7 +804,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	//rotator2.setSchedulingBounds(bounds);
 	//l2RotTrans.addChild(rotator2);
         
-        
         // create some axis for the world to show it has been rotated
         //ColorCube axis = new ColorCube(5.0);
         //Appearance app = new Appearance();
@@ -783,12 +814,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         objTrans1.addChild(objTrans);
         m_SceneBranchGroup.addChild(objTrans1);
         
-        
         ViewPlatform vp = new ViewPlatform();
         vp.setViewAttachPolicy(View.RELATIVE_TO_FIELD_OF_VIEW);//.RELATIVE_TO_FIELD_OF_VIEW);
         vp.setActivationRadius(getViewPlatformActivationRadius());
-        
-        
         
         BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
         
@@ -812,8 +840,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         view.addCanvas3D(c3d);
         addCanvas3D(c3d);
         
-        
-        
         Background background = null;//createBackground();
         if (background != null)
             m_SceneBranchGroup.addChild(background);
@@ -821,7 +847,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
         locale.addBranchGraph(m_SceneBranchGroup);
         addViewBranchGroup(locale, viewBranchGroup);
-        
         
   /*      
         Locale locale = new Locale(u);
@@ -838,7 +863,37 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         locale.addBranchGraph(sceneBranchGroup);
         addViewBranchGroup(locale, viewBranchGroup);
     */  
-        
+        if(XMLTimerread == null)
+        {
+             XMLTimerread = new Thread(this);
+             XMLTimerread.start();
+        }
+    }
+    public void run()
+    {
+         while(true)
+         {
+             repaint();
+             try
+             {
+                 XMLTimerread.sleep(1000);
+                 TimerCount++;
+                 ReadXML();
+                 m_TimerCtrl.setText(String.valueOf(TimerCount));
+             }
+             catch(InterruptedException e)
+             {
+             }
+         }
+     }
+    public void start()
+    {
+        XMLTimerread.resume();
+    }
+    
+    public void stop()
+    {
+        XMLTimerread.suspend();
     }
     //protected BranchGroup createSceneBranchGroup() 
     //{
@@ -990,7 +1045,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         add(c3d, BorderLayout.CENTER);
         Panel controlPanel = new Panel();
         // add the UI to the frame
-        m_RotationLabel = new Label("Rotation: ");
+        m_RotationLabel = new Label("Rot: ");
         m_RotationFieldX = new TextField("0.00");
         m_RotationFieldY = new TextField("0.00");
         m_RotationFieldZ = new TextField("0.00");
@@ -999,7 +1054,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         controlPanel.add(m_RotationFieldX);
         controlPanel.add(m_RotationFieldY);
         controlPanel.add(m_RotationFieldZ);
-        m_TranslationLabel = new Label("Translation: ");
+        m_TranslationLabel = new Label("Trn: ");
         m_TranslationFieldX = new TextField("0.00");
         m_TranslationFieldY = new TextField("0.00");
         m_TranslationFieldZ = new TextField("0.00");
@@ -1007,7 +1062,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         controlPanel.add(m_TranslationFieldX);
         controlPanel.add(m_TranslationFieldY);
         controlPanel.add(m_TranslationFieldZ);
-        m_ScaleLabel = new Label("Scale: ");
+        m_ScaleLabel = new Label("Scl: ");
         m_ScaleFieldX = new TextField("0.00");
         m_ScaleFieldY = new TextField("0.00");
         m_ScaleFieldZ = new TextField("0.00");
@@ -1019,14 +1074,19 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         controlPanel.add(m_EarthView);
         m_MoonView = new Button("Moon View");
         controlPanel.add(m_MoonView);
+        m_TimerCtrl = new TextField("0");
+        controlPanel.add(m_TimerCtrl);
         add(controlPanel, BorderLayout.SOUTH);
         m_EarthView.addActionListener(this);
         m_MoonView.addActionListener(this);
+        
         doLayout();
         
     }
 
-    public void destroy() {
+    public void destroy() 
+    {
+        XMLTimerread.stop();
 	u.cleanup();
     }
 
@@ -1065,7 +1125,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	new MainFrame(new visualtra(), m_kWidth, m_kHeight);
     }
 }
-
 
 //*****************************************************************************
 // TornadoMouseRotate
@@ -1683,6 +1742,7 @@ abstract class TornadoMouseBehavior extends Behavior
         }
         // Calculate change and scale
         m_TranslationVector.sub(m_NewPos, m_OldPos);
+        //m_OriginalPosition.sub(m_OldPos, m_NewPos );
         applyVectorToObject(m_TranslationVector);
         if (isRelativeToStartDrag() == false) 
         {
