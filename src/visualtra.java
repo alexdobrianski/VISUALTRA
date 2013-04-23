@@ -114,6 +114,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     protected Vector3f m_OriginalPosition = null;
     protected Object m_Earth_Moon = null;
     protected Transform3D m_Transform3D = null;
+    public LineArray MoonLines= null;
     
     //***********************************************
     protected TransformGroup getTransformEarthMoon()
@@ -322,8 +323,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             //            10000000.0
             double Coef = 10000000.0;
             //System.out.println("Information of all univerce");
-              for (int s = 0; s < nodeLst.getLength(); s++) 
-              {
+            for (int s = 0; s < nodeLst.getLength(); s++) 
+            {
                 Node fstNode = nodeLst.item(s);
                 if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
                 {
@@ -380,6 +381,73 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     }
                 }
             } 
+            NodeList nodeMoonLst = doc.getElementsByTagName("MoonObject");
+            MoonLines = new LineArray(2*(nodeMoonLst.getLength()-1),LineArray.COORDINATES);
+            double  XOld=0;
+            double YOld=0;
+            double ZOld=0;
+            
+            double XNext=0;
+            double YNext=0;
+            double ZNext=0;
+
+            for (int s = 0; s < nodeMoonLst.getLength(); s++) 
+            {
+                Node fstNode = nodeMoonLst.item(s);
+                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                {
+                    Element fstElmnt = (Element) fstNode;
+                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
+                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                    NodeList fstType = fstTypeElmnt.getChildNodes();
+                    String strType = ((Node) fstType.item(0)).getNodeValue(); // must be MoonTra
+                    
+                    NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");
+                    Element lstXElmnt = (Element) lstXElmntLst.item(0);
+                    NodeList lstX = lstXElmnt.getChildNodes();
+                    String strX = ((Node) lstX.item(0)).getNodeValue();
+                    
+                    NodeList lstYElmntLst = fstElmnt.getElementsByTagName("Z");
+                    Element lstYElmnt = (Element) lstYElmntLst.item(0);
+                    NodeList lstY = lstYElmnt.getChildNodes();
+                    String strY = ((Node) lstY.item(0)).getNodeValue();
+                    
+                    NodeList lstZElmntLst = fstElmnt.getElementsByTagName("Y");
+                    Element lstZElmnt = (Element) lstZElmntLst.item(0);
+                    NodeList lstZ = lstZElmnt.getChildNodes();
+                    String strZ = ((Node) lstZ.item(0)).getNodeValue();
+                    if (XOld == 0)
+                    {
+                        XOld = Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= -Double.valueOf(strZ);
+                        XOld /=Coef;YOld /=Coef;ZOld /=Coef;
+                    }
+                    else
+                    {
+                        XNext = Double.valueOf(strX); YNext= Double.valueOf(strY); ZNext= -Double.valueOf(strZ);
+                        XNext /=Coef;YNext /=Coef;ZNext /=Coef;
+                        MoonLines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                        MoonLines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                        XOld = XNext; YOld = YNext; ZOld = ZNext;
+                    }
+                }
+            }
+        //objTrans.addChild(new Shape3D(axisXLines));
+        //axisXLines.setCoordinate(0,new Point3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(1,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        
+        //axisXLines.setCoordinate(2,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(3,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        
+        //axisXLines.setCoordinate(4,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(5,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        
+        //axisXLines.setCoordinate(6,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(7,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        
+        //axisXLines.setCoordinate(8,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(9,new Point3f((float)(MoonX-CenterX)+5f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        
+                    
         } 
         catch (Exception e) 
         {  
@@ -529,22 +597,22 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         tgMoon.addChild(sphMoon);
         objTrans.addChild(tgMoon);
         
-        LineArray axisXLines=new LineArray(10,LineArray.COORDINATES);
-        objTrans.addChild(new Shape3D(axisXLines));
-        axisXLines.setCoordinate(0,new Point3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        axisXLines.setCoordinate(1,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //LineArray axisXLines=new LineArray(10,LineArray.COORDINATES);
+        objTrans.addChild(new Shape3D(MoonLines));
+        //axisXLines.setCoordinate(0,new Point3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(1,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
         
-        axisXLines.setCoordinate(2,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        axisXLines.setCoordinate(3,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(2,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(3,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
         
-        axisXLines.setCoordinate(4,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        axisXLines.setCoordinate(5,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(4,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(5,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
         
-        axisXLines.setCoordinate(6,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        axisXLines.setCoordinate(7,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(6,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(7,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
         
-        axisXLines.setCoordinate(8,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        axisXLines.setCoordinate(9,new Point3f((float)(MoonX-CenterX)+5f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(8,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
+        //axisXLines.setCoordinate(9,new Point3f((float)(MoonX-CenterX)+5f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
         
         
         
