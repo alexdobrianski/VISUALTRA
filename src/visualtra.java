@@ -108,13 +108,55 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     //Button mLeft = null;
     Button m_EarthView = null;
     Button m_MoonView = null;
+    
+    Button m_ViewYZ = null;
+    Button m_ViewXZ = null;
+    Button m_ViewXY = null;
+    
+    
+    boolean m_View_Earth = true;
     boolean ButtonPressed = false;
     private Thread XMLTimerread;
     public int time =1000;
     protected Vector3f m_OriginalPosition = null;
     protected Object m_Earth_Moon = null;
     protected Transform3D m_Transform3D = null;
+    protected Transform3D m_TransformX = null;
+    protected Transform3D m_TransformY = null;
+
     public LineArray MoonLines= null;
+    
+    private static final int VIEW_Z1 = 0;
+    private static final int VIEW_Z2 = 1;
+    private static final int VIEW_Z3 = 2;
+    private static final int VIEW_Z4 = 3;
+    int m_TypeOfoView = 0;
+    double m_ScaleFromMouse = 1.0;
+    
+    
+    public LineArray Sat0Lines= null;
+    public LineArray Sat1Lines= null;
+    public LineArray Sat2Lines= null;
+    public LineArray Sat3Lines= null;
+    public LineArray Sat4Lines= null;
+    public LineArray Sat5Lines= null;
+    public LineArray Sat6Lines= null;
+    public LineArray Sat7Lines= null;
+    public LineArray Sat8Lines= null;
+    public LineArray Sat9Lines= null;
+    
+    public LineArray Sat0Dot =  null;
+    public LineArray Sat1Dot= null;
+    public LineArray Sat2Dot= null;
+    public LineArray Sat3Dot= null;
+    public LineArray Sat4Dot= null;
+    public LineArray Sat5Dot= null;
+    public LineArray Sat6Dot= null;
+    public LineArray Sat7Dot= null;
+    public LineArray Sat8Dot= null;
+    public LineArray Sat9Dot= null;
+    int MaxSat = 0;
+    
     
     //***********************************************
     protected TransformGroup getTransformEarthMoon()
@@ -129,6 +171,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         String szComand =e.getActionCommand();
         if (szComand.compareTo("Moon View") == 0)
         {
+            m_View_Earth = false;
             // moving by vector 
             //Vector3f vector = new Vector3f(140f,10.1f , 10.4f);
             //TransformGroup tg = getTransformEarthMoon();
@@ -158,9 +201,23 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             //    m_Transform3D.setScale(objectScale);
             //    tg.setTransform(m_Transform3D);
             //}
+            Vector3f vector = new Vector3f(0f,0f,0f);
+            TransformGroup tg = getTransformEarthMoon();
+            if (tg != null) 
+            {
+                // earth in the center
+                Vector3d vTranslation = new Vector3d(-(MoonX-CenterX),-(MoonY-CenterY),-(MoonZ-CenterZ));
+                m_Transform3D.setTranslation(vTranslation);
+                // and scale set to original value
+                m_ScaleFromMouse = 1;
+                Vector3d objectScale = new Vector3d(m_ScaleFromMouse, m_ScaleFromMouse, m_ScaleFromMouse);
+                m_Transform3D.setScale(objectScale);
+                tg.setTransform(m_Transform3D);
+            }
         }
-        if (szComand.compareTo("Original View") == 0)
+        if (szComand.compareTo("Earth View") == 0)
         {
+            m_View_Earth = true;
             Vector3f vector = new Vector3f(0f,0f,0f);
             TransformGroup tg = getTransformEarthMoon();
             if (tg != null) 
@@ -169,9 +226,79 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                 Vector3d vTranslation = new Vector3d(0,0,0);
                 m_Transform3D.setTranslation(vTranslation);
                 // and scale set to original value
-                Vector3d objectScale = new Vector3d(1, 1, 1);
+                m_ScaleFromMouse = 1;
+                Vector3d objectScale = new Vector3d(m_ScaleFromMouse, m_ScaleFromMouse, m_ScaleFromMouse);
                 m_Transform3D.setScale(objectScale);
                 tg.setTransform(m_Transform3D);
+            }
+        }
+        if (szComand.compareTo("Rot Z") == 0)  // negative
+        {
+            switch(m_TypeOfoView)
+            {
+             case VIEW_Z1:m_TypeOfoView = VIEW_Z2;break;
+             case VIEW_Z2:m_TypeOfoView = VIEW_Z3;break;
+             case VIEW_Z3:m_TypeOfoView = VIEW_Z4;break;
+             case VIEW_Z4:m_TypeOfoView = VIEW_Z1;break;
+            }
+            if (m_View_Earth)
+            {
+                Vector3f vector = new Vector3f(0f,0f,0f);
+                TransformGroup tg = getTransformEarthMoon();
+                if (tg != null) 
+                {
+                    // the center
+                    Vector3d vTranslation = new Vector3d(0,0,0);
+                    m_Transform3D.setTranslation(vTranslation);
+                    // and scale set to original value
+                    
+                    Vector3d objectScale = new Vector3d(m_ScaleFromMouse, m_ScaleFromMouse, m_ScaleFromMouse);
+                    m_Transform3D.setScale(objectScale);
+                    //tg.setTransform(m_Transform3D);
+                    double y_angle =  3.14159265358979323846264338327950288 /2.0;
+                    //m_TransformY = new Transform3D();
+                    m_TransformY.rotY(y_angle);
+                    Matrix4d mat = new Matrix4d();
+                    m_Transform3D.get(mat);
+                    m_Transform3D.setTranslation(new Vector3d(0.0, 0.0, 0.0));
+                    m_Transform3D.mul(m_Transform3D, m_TransformY);
+                    Vector3d translation = new Vector3d(mat.m03, mat.m13, mat.m23);
+                    m_Transform3D.setTranslation(translation);
+                    tg.setTransform(m_Transform3D);
+                }
+            }
+            else
+            {
+                Vector3f vector = new Vector3f(0f,0f,0f);
+                TransformGroup tg = getTransformEarthMoon();
+                if (tg != null) 
+                {
+                    // the center
+                    Vector3d vTranslation = new Vector3d(0,0,0);
+                    m_Transform3D.setTranslation(vTranslation);
+                    // and scale set to original value
+                    Vector3d objectScale = new Vector3d(m_ScaleFromMouse, m_ScaleFromMouse, m_ScaleFromMouse);
+                    m_Transform3D.setScale(objectScale);
+                    //tg.setTransform(m_Transform3D);
+                    double y_angle =  3.14159265358979323846264338327950288 /2.0;
+                    //m_TransformY = new Transform3D();
+                    m_TransformY.rotY(y_angle);
+                    Matrix4d mat = new Matrix4d();
+                    m_Transform3D.get(mat);
+                    m_Transform3D.setTranslation(new Vector3d(0.0, 0.0, 0.0));
+                    m_Transform3D.mul(m_Transform3D, m_TransformY);
+                    Vector3d translation = new Vector3d(mat.m03, mat.m13, mat.m23);
+                    m_Transform3D.setTranslation(translation);
+                    switch(m_TypeOfoView)
+                    {
+                    case VIEW_Z1:m_Transform3D.setTranslation(new Vector3d(-(MoonX-CenterX),-(MoonY-CenterY),-(MoonZ-CenterZ)));break;
+                    case VIEW_Z2:m_Transform3D.setTranslation(new Vector3d(-(MoonX-CenterX),(MoonY-CenterY),(MoonZ-CenterZ)));break;
+                    case VIEW_Z3:m_Transform3D.setTranslation(new Vector3d((MoonX-CenterX),-(MoonY-CenterY),(MoonZ-CenterZ)));break;
+                    case VIEW_Z4:m_Transform3D.setTranslation(new Vector3d(-(MoonX-CenterX),(MoonY-CenterY),-(MoonZ-CenterZ)));break;
+                    }
+                    
+                    tg.setTransform(m_Transform3D);
+                }
             }
         }
     }
@@ -431,23 +558,185 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     }
                 }
             }
-        //objTrans.addChild(new Shape3D(axisXLines));
-        //axisXLines.setCoordinate(0,new Point3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(1,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(2,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(3,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(4,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(5,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(6,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(7,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(8,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(9,new Point3f((float)(MoonX-CenterX)+5f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
+            
+            for (int iSat=0; iSat<10;iSat++)
+            {
+                int I2s = 1;
+                String NameObject = "Sat"+iSat+"Object";
+                NodeList nodeSatLst = doc.getElementsByTagName(NameObject);
+                int iSizeOfElements = nodeSatLst.getLength();
+                if (iSizeOfElements > 0)
+                {
+                    MaxSat++;
+                    switch(iSat)
+                    {
+                    case 0:Sat0Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat0Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;
+                    case 1:Sat1Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat1Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;    
+                    case 2:Sat2Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat2Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;
+                    case 3:Sat3Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat3Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;    
+                    case 4:Sat4Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat4Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;
+                    case 5:Sat5Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat5Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;    
+                    case 6:Sat6Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat6Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;
+                    case 7:Sat7Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat7Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;    
+                    case 8:Sat8Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat8Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;
+                    case 9:Sat9Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
+                        Sat9Dot = new LineArray(I2s*2,LineArray.COORDINATES);
+                        break;    
+                    }
+                    XOld=0;
+                    YOld=0;
+                    ZOld=0;
+            
+                    XNext=0;
+                    YNext=0;
+                    ZNext=0;
                     
+                    for (int s = 0; s < iSizeOfElements; s++) 
+                    {
+                        Node fstNode = nodeSatLst.item(s);
+                        if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                        {
+                            Element fstElmnt = (Element) fstNode;
+                            NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
+                            Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                            NodeList fstType = fstTypeElmnt.getChildNodes();
+                            String strType = ((Node) fstType.item(0)).getNodeValue(); // must be MoonTra
+                    
+                            NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");
+                            Element lstXElmnt = (Element) lstXElmntLst.item(0);
+                            NodeList lstX = lstXElmnt.getChildNodes();
+                            String strX = ((Node) lstX.item(0)).getNodeValue();
+                    
+                            NodeList lstYElmntLst = fstElmnt.getElementsByTagName("Z");
+                            Element lstYElmnt = (Element) lstYElmntLst.item(0);
+                            NodeList lstY = lstYElmnt.getChildNodes();
+                            String strY = ((Node) lstY.item(0)).getNodeValue();
+                    
+                            NodeList lstZElmntLst = fstElmnt.getElementsByTagName("Y");
+                            Element lstZElmnt = (Element) lstZElmntLst.item(0);
+                            NodeList lstZ = lstZElmnt.getChildNodes();
+                            String strZ = ((Node) lstZ.item(0)).getNodeValue();
+                            if (XOld == 0)
+                            {
+                                XOld = Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= -Double.valueOf(strZ);
+                                XOld /=Coef;YOld /=Coef;ZOld /=Coef;
+                            }
+                            else
+                            {
+                                XNext = Double.valueOf(strX); YNext= Double.valueOf(strY); ZNext= -Double.valueOf(strZ);
+                                XNext /=Coef;YNext /=Coef;ZNext /=Coef;
+                                if (s <= (iSizeOfElements-1-I2s))
+                                {
+                                    switch(iSat)
+                                    {
+                                    case 0:
+                                        Sat0Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat0Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 1:
+                                        Sat1Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat1Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 2:
+                                        Sat2Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat2Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 3:
+                                        Sat3Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat3Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 4:
+                                        Sat4Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat4Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 5:
+                                        Sat5Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat5Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 6:
+                                        Sat6Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat6Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 7:
+                                        Sat7Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat7Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 8:
+                                        Sat8Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat8Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 9:
+                                        Sat9Lines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat9Lines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    }
+                                }
+                                else
+                                {
+                                    switch(iSat)
+                                    {
+                                    case 0:
+                                        Sat0Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat0Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 1:
+                                        Sat1Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat1Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 2:
+                                        Sat2Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat2Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                    case 3:
+                                        Sat3Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat3Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 4:
+                                        Sat4Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat4Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                    case 5:
+                                        Sat5Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat5Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 6:
+                                        Sat6Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat6Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                    case 7:
+                                        Sat7Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat7Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    case 8:
+                                        Sat8Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat8Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                    case 9:
+                                        Sat9Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
+                                        Sat9Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
+                                    }
+                                }
+                                XOld = XNext; YOld = YNext; ZOld = ZNext;
+                            }
+                        }
+                    }
+                }
+            }
         } 
         catch (Exception e) 
         {  
@@ -524,6 +813,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         
         m_Earth_Moon = objTrans;
         m_Transform3D = new Transform3D();
+        m_TransformY = new Transform3D();
         
         // create the mouse scale behavior and set limits
         TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
@@ -541,11 +831,11 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         mouseRotate.setSchedulingBounds(getApplicationBounds());
         objTrans.addChild(mouseRotate);
         // create the mouse translate behavior and set limits
-        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.005f);
+        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.0002f);
         mouseTrans.setObject(objTrans);
         mouseTrans.setChangeListener(this);
-        mouseTrans.setMinTranslate(new Point3d(-4, -4, -4));
-        mouseTrans.setMaxTranslate(new Point3d(4, 4, 4));
+        mouseTrans.setMinTranslate(new Point3d(-10, -10, -10));
+        mouseTrans.setMaxTranslate(new Point3d(10, 10, 10));
         mouseTrans.setSchedulingBounds(getApplicationBounds());
         objTrans.addChild(mouseTrans);
         //objTrans.addChild(new ColorCube(0.5));
@@ -597,24 +887,30 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         tgMoon.addChild(sphMoon);
         objTrans.addChild(tgMoon);
         
-        //LineArray axisXLines=new LineArray(10,LineArray.COORDINATES);
         objTrans.addChild(new Shape3D(MoonLines));
-        //axisXLines.setCoordinate(0,new Point3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(1,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(2,new Point3f((float)(MoonX-CenterX)+1f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(3,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(4,new Point3f((float)(MoonX-CenterX)+2f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(5,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(6,new Point3f((float)(MoonX-CenterX)+3f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(7,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        //axisXLines.setCoordinate(8,new Point3f((float)(MoonX-CenterX)+4f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        //axisXLines.setCoordinate(9,new Point3f((float)(MoonX-CenterX)+5f, (float)(MoonY-CenterY), (float)(MoonZ-CenterZ)));
-        
-        
+        for (int iSat=0; iSat<MaxSat;iSat++)
+        {
+            
+            Appearance aSatDot = new Appearance();
+            ColoringAttributes SatDotColor = new ColoringAttributes();
+            SatDotColor.setColor(new Color3f(2.0f,0f,0f));
+            aSatDot.setColoringAttributes(SatDotColor);
+            Shape3D SatDot = null;        
+            switch(iSat)
+            {
+            case 0: objTrans.addChild(new Shape3D(Sat0Lines)); SatDot = new Shape3D(Sat0Dot); break;
+            case 1: objTrans.addChild(new Shape3D(Sat1Lines)); SatDot = new Shape3D(Sat1Dot); break;
+            case 2: objTrans.addChild(new Shape3D(Sat2Lines)); SatDot = new Shape3D(Sat2Dot); break;
+            case 3: objTrans.addChild(new Shape3D(Sat3Lines)); SatDot = new Shape3D(Sat3Dot); break;
+            case 4: objTrans.addChild(new Shape3D(Sat4Lines)); SatDot = new Shape3D(Sat4Dot); break;
+            case 5: objTrans.addChild(new Shape3D(Sat5Lines)); SatDot = new Shape3D(Sat5Dot); break;
+            case 6: objTrans.addChild(new Shape3D(Sat6Lines)); SatDot = new Shape3D(Sat6Dot); break;
+            case 7: objTrans.addChild(new Shape3D(Sat7Lines)); SatDot = new Shape3D(Sat7Dot); break;
+            case 8: objTrans.addChild(new Shape3D(Sat8Lines)); SatDot = new Shape3D(Sat8Dot); break;
+            case 9: objTrans.addChild(new Shape3D(Sat9Lines)); SatDot = new Shape3D(Sat9Dot); break;
+            }
+            SatDot.setAppearance(aSatDot); objTrans.addChild(SatDot);
+        }
         
         // Create a Sun Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
@@ -823,7 +1119,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
              {
                  XMLTimerread.sleep(1000);
                  TimerCount++;
+                 TransformGroup tg = getTransformEarthMoon();
+                 tg.numChildren();
                  ReadXML();
+                 //m_Earth_Moon
                  m_TimerCtrl.setText(String.valueOf(TimerCount));
              }
              catch(InterruptedException e)
@@ -967,6 +1266,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     // called by TornadoMouseScale
     public void onScale(Object target, Vector3d scale) 
     {
+        m_ScaleFromMouse = scale.x;
         //m_ScaleFieldX.setText(String.valueOf(scale.x));
         //m_ScaleFieldY.setText(String.valueOf(scale.y));
         //m_ScaleFieldZ.setText(String.valueOf(scale.z));
@@ -1016,16 +1316,26 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //controlPanel.add(m_ScaleFieldY);
         //controlPanel.add(m_ScaleFieldZ);
         
-        m_EarthView = new Button("Original View");
+        m_EarthView = new Button("Earth View");
         controlPanel.add(m_EarthView);
-        //m_MoonView = new Button("Moon View");
-        //controlPanel.add(m_MoonView);
+        m_MoonView = new Button("Moon View");
+        controlPanel.add(m_MoonView);
+        
+        //m_ViewYZ = new Button("Rot Z");
+        //controlPanel.add(m_ViewYZ);
+        //m_ViewXZ = new Button("X-Z");
+        //controlPanel.add(m_ViewXZ);
+        //m_ViewXY = new Button("X-Y");
+        //controlPanel.add(m_ViewXY);
         m_TimerCtrl = new TextField("0");
         controlPanel.add(m_TimerCtrl);
         
         add(controlPanel, BorderLayout.SOUTH);
         m_EarthView.addActionListener(this);
-        //m_MoonView.addActionListener(this);
+        m_MoonView.addActionListener(this);
+        //m_ViewYZ.addActionListener(this);
+        //m_ViewXZ.addActionListener(this);
+        //m_ViewXY.addActionListener(this);
         
         doLayout();
         
@@ -1897,9 +2207,9 @@ class TornadoMouseTranslate extends TornadoMouseBehavior
             vTranslation.x += vector.x;
             vTranslation.y += vector.y;
             vTranslation.z += vector.z;
-            if (vTranslation.x >= m_MinTranslate.x && vTranslation.y >= m_MinTranslate.y && vTranslation.z >= m_MinTranslate.z) 
+            //if (vTranslation.x >= m_MinTranslate.x && vTranslation.y >= m_MinTranslate.y && vTranslation.z >= m_MinTranslate.z) 
             {
-                if (vTranslation.x <= m_MaxTranslate.x && vTranslation.y <= m_MaxTranslate.y && vTranslation.z <= m_MaxTranslate.z) 
+                //if (vTranslation.x <= m_MaxTranslate.x && vTranslation.y <= m_MaxTranslate.y && vTranslation.z <= m_MaxTranslate.z) 
                 {
                     m_Transform3D.setTranslation(vTranslation);
                     applyTransform();
