@@ -126,8 +126,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     protected Transform3D m_Transform3D = null;
     protected Transform3D m_TransformX = null;
     protected Transform3D m_TransformY = null;
+    
+    protected Transform3D m_Transform3DMoon = null;
+    protected Transform3D m_Transform3DSun = null;
+    
 
-    public LineArray MoonLines= null;
+    //public LineArray MoonLines= null;
     
     private static final int VIEW_Z1 = 0;
     private static final int VIEW_Z2 = 1;
@@ -162,7 +166,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     ImageComponent2D ImageSkyMap = null;
     Texture texSky;
     Shape3D Sat0Line = null;
-    BranchGroup MoonTra = null;  
+    //BranchGroup MoonTra = null;  
+    TransformGroup tgMoon = null;
+    TransformGroup tgLtSun = null;
+    BranchGroup SatTra = null;  
+    
+    
     
     
     //***********************************************
@@ -208,7 +217,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             //    m_Transform3D.setScale(objectScale);
             //    tg.setTransform(m_Transform3D);
             //}
-            Vector3f vector = new Vector3f(0f,0f,0f);
+            //Vector3f vector = new Vector3f(0f,0f,0f);
             TransformGroup tg = getTransformEarthMoon();
             if (tg != null) 
             {
@@ -225,7 +234,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         if (szComand.compareTo("Earth View") == 0)
         {
             m_View_Earth = true;
-            Vector3f vector = new Vector3f(0f,0f,0f);
+            //Vector3f vector = new Vector3f(0f,0f,0f);
             TransformGroup tg = getTransformEarthMoon();
             if (tg != null) 
             {
@@ -250,7 +259,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             }
             if (m_View_Earth)
             {
-                Vector3f vector = new Vector3f(0f,0f,0f);
+                //Vector3f vector = new Vector3f(0f,0f,0f);
                 TransformGroup tg = getTransformEarthMoon();
                 if (tg != null) 
                 {
@@ -276,7 +285,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             }
             else
             {
-                Vector3f vector = new Vector3f(0f,0f,0f);
+                //Vector3f vector = new Vector3f(0f,0f,0f);
                 TransformGroup tg = getTransformEarthMoon();
                 if (tg != null) 
                 {
@@ -445,13 +454,16 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         boolean bRet = false;
         try 
         {  
+            long CurMils = System.currentTimeMillis();
             //File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml");
+            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
             //URL url = new URL("http://192.168.0.102/SatCtrl/travisual.xml");
+            
             InputStream fXmlFile = url.openStream();
             
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();  
+            
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();  
             Document doc = dBuilder.parse(fXmlFile);  
             doc.getDocumentElement().normalize();  
@@ -517,9 +529,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                         SunX /=Coef;SunY /=Coef;SunZ /=Coef;SunR /=Coef;
                     }
                 }
-            } 
-            NodeList nodeMoonLst = doc.getElementsByTagName("MoonObject");
-            MoonLines = new LineArray(2*(nodeMoonLst.getLength()-1),LineArray.COORDINATES);
+            }
+            
+            //NodeList nodeMoonLst = doc.getElementsByTagName("MoonObject");
+            //MoonLines = new LineArray(2*(nodeMoonLst.getLength()-1),LineArray.COORDINATES);
             double  XOld=0;
             double YOld=0;
             double ZOld=0;
@@ -528,6 +541,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             double YNext=0;
             double ZNext=0;
 
+            /*
             for (int s = 0; s < nodeMoonLst.getLength(); s++) 
             {
                 Node fstNode = nodeMoonLst.item(s);
@@ -568,7 +582,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     }
                 }
             }
-            
+            */
             for (int iSat=0; iSat<10;iSat++)
             {
                 int I2s = 1;
@@ -890,6 +904,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         m_Transform3D = new Transform3D();
         m_TransformY = new Transform3D();
         
+        m_Transform3DMoon= new Transform3D();
+        m_Transform3DSun= new Transform3D();
+        
         // create the mouse scale behavior and set limits
         TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
         mouseScale.setMinScale(new Point3d(0.1, 0.1, 0.1));
@@ -910,7 +927,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         mouseTrans.setObject(objTrans);
         mouseTrans.setChangeListener(this);
         mouseTrans.setMinTranslate(new Point3d(-10, -10, -10));
-        mouseTrans.setMaxTranslate(new Point3d(10, 10, 10));
+        mouseTrans.setMaxTranslate(new Point3d(20, 20, 20));
         mouseTrans.setSchedulingBounds(getApplicationBounds());
         objTrans.addChild(mouseTrans);
         //objTrans.addChild(new ColorCube(0.5));
@@ -962,14 +979,25 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         Transform3D LocationMoon = new Transform3D();
         Vector3f vectorMoon = new Vector3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ));
         LocationMoon.setTranslation(vectorMoon);
-        TransformGroup tgMoon = new TransformGroup(LocationMoon);
+        tgMoon = new TransformGroup(LocationMoon);
+        tgMoon.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        tgMoon.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        tgMoon.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+        tgMoon.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+        tgMoon.setCapability(TransformGroup.ALLOW_PICKABLE_READ);
+        tgMoon.setCapability(TransformGroup.ALLOW_PICKABLE_WRITE);
+        tgMoon.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+
         tgMoon.addChild(sphMoon);
         objTrans.addChild(tgMoon);
         
-        MoonTra = new BranchGroup();  
-        MoonTra.setCapability(BranchGroup.ALLOW_DETACH);  
-        MoonTra.addChild(new Shape3D(MoonLines));
-        objTrans.addChild(MoonTra);
+        //MoonTra = new BranchGroup();  
+        //MoonTra.setCapability(BranchGroup.ALLOW_DETACH);  
+        //MoonTra.addChild(new Shape3D(MoonLines));
+        //objTrans.addChild(MoonTra);
+        
+        SatTra = new BranchGroup();  
+        SatTra.setCapability(BranchGroup.ALLOW_DETACH);  
         for (int iSat=0; iSat<MaxSat;iSat++)
         {
             
@@ -980,7 +1008,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             Shape3D SatDot = null;        
             switch(iSat)
             {
-            case 0: objTrans.addChild(new Shape3D(Sat0Lines)); SatDot = new Shape3D(Sat0Dot); break;
+            case 0: //objTrans.addChild(new Shape3D(Sat0Lines)); SatDot = new Shape3D(Sat0Dot); 
+            SatTra.addChild(new Shape3D(Sat0Lines));SatDot = new Shape3D(Sat0Dot); 
+            break;
             case 1: objTrans.addChild(new Shape3D(Sat1Lines)); SatDot = new Shape3D(Sat1Dot); break;
             case 2: objTrans.addChild(new Shape3D(Sat2Lines)); SatDot = new Shape3D(Sat2Dot); break;
             case 3: objTrans.addChild(new Shape3D(Sat3Lines)); SatDot = new Shape3D(Sat3Dot); break;
@@ -991,7 +1021,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             case 8: objTrans.addChild(new Shape3D(Sat8Lines)); SatDot = new Shape3D(Sat8Dot); break;
             case 9: objTrans.addChild(new Shape3D(Sat9Lines)); SatDot = new Shape3D(Sat9Dot); break;
             }
-            SatDot.setAppearance(aSatDot); objTrans.addChild(SatDot);
+            SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
+            SatTra.addChild(SatDot);
+            objTrans.addChild(SatTra);
         }
         
         // Create a Sun Sphere object, generate one copy of the sphere,
@@ -1008,14 +1040,26 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //texAttr.setTextureMode(TextureAttributes.COMBINE);//.COMBINE);//.BLEND);//.MODULATE);
         //a.setTextureAttributes(texAttr);
 	Sphere sphSun = new Sphere((float)SunR/100, Sphere.GENERATE_NORMALS , 180, a);//.GENERATE_NORMALS, 180, a);
+
+        Transform3D LocationSunLt = new Transform3D();
+        tgLtSun = new TransformGroup(LocationSunLt);
+        tgLtSun.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        tgLtSun.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        tgLtSun.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+        tgLtSun.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+        tgLtSun.setCapability(TransformGroup.ALLOW_PICKABLE_READ);
+        tgLtSun.setCapability(TransformGroup.ALLOW_PICKABLE_WRITE);
+        tgLtSun.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
         
         // position of the sun (kind of)
         Transform3D LocationSun = new Transform3D();
-        Vector3f vectorSun = new Vector3f((float)(SunX/100-CenterX), (float)(SunY/100-CenterY) , (float)(SunZ/100-CenterZ));
+        Vector3f vectorSun = new Vector3f((float)(SunX-CenterX)/100, (float)(SunY-CenterY)/100 , (float)(SunZ-CenterZ)/100);
         LocationSun.setTranslation(vectorSun);
         TransformGroup tgSun = new TransformGroup(LocationSun);
         tgSun.addChild(sphSun);
-        objTrans.addChild(tgSun);
+        //objTrans.addChild(tgSun);
+        tgLtSun.addChild(tgSun);
+        objTrans.addChild(tgLtSun);
   
 	TransformGroup l1RotTrans = new TransformGroup();
 	l1RotTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
@@ -1027,26 +1071,26 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 
         Color3f alColor   = new Color3f(.2f, .2f, .2f);
         AmbientLight aLgt = new AmbientLight(alColor);
-	Point3f lPoint  = new Point3f((float)(SunX-CenterX), (float)(SunY-CenterY), (float)(SunZ-CenterZ));
-	Point3f atten = new Point3f(2.0f, .0f, 0.0f);
+	Point3f lSunPoint  = new Point3f((float)(SunX-CenterX), (float)(SunY-CenterY), (float)(SunZ-CenterZ));
+	Point3f atten = new Point3f(.010f, .0f, .0f);
         
 	// Create transformations for the positional lights
-	Transform3D t = new Transform3D();
-	Vector3d lPos1 =  new Vector3d(0.0, 0.0, 2.0);
-	t.set(lPos1);
-	TransformGroup l1Trans = new TransformGroup(t);
-	l1RotTrans.addChild(l1Trans);
+	//Transform3D t = new Transform3D();
+	//Vector3d lPos1 =  new Vector3d(0.0, 0.0, 2.0);
+	//t.set(lPos1);
+	//TransformGroup l1Trans = new TransformGroup(t);
+	//l1RotTrans.addChild(l1Trans);
         // Create Geometry for point lights
-        Color3f lColor1   = new Color3f(20.0f, 20.0f, 20.0f);
-        ColoringAttributes caL1 = new ColoringAttributes();
-        caL1.setColor(lColor1);
+        Color3f lColor1   = new Color3f(.10f, .10f, .10f);
+        //ColoringAttributes caL1 = new ColoringAttributes();
+        //caL1.setColor(lColor1);
         //Appearance appL1 = new Appearance();
         //appL1.setColoringAttributes(caL1);
         //l1Trans.addChild(new Sphere(0.1f, appL1));
         // Create lights
-        Light lgt1 = null;
-	Vector3f lDirect1 = new Vector3f(lPos1);
-	lDirect1.negate();
+        Light lgtSun = null;
+	//Vector3f lDirect1 = new Vector3f(lPos1);
+	//lDirect1.negate();
 
         // Create transformations for the positional lights
 	//t = new Transform3D();
@@ -1070,16 +1114,16 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         lightType = 	POINT_LIGHT;
 	switch (lightType) {
 	case DIRECTIONAL_LIGHT:
-	    lgt1 = new DirectionalLight(lColor1, lDirect1);
+	    //lgt1 = new DirectionalLight(lColor1, lDirect1);
 	    //lgt2 = new DirectionalLight(lColor2, lDirect2);
 	    break;
 	case POINT_LIGHT:
-	    lgt1 = new PointLight(lColor1, lPoint, atten);
+	    lgtSun = new PointLight(lColor1, lSunPoint, atten);
 	    //lgt2 = new PointLight(lColor2, lPoint, atten);
 	    break;
 	case SPOT_LIGHT:
-	    lgt1 = new SpotLight(lColor1, lPoint, atten, lDirect1,
-				 25.0f * (float)Math.PI / 180.0f, 10.0f);
+	    //lgt1 = new SpotLight(lColor1, lPoint, atten, lDirect1,
+		//		 25.0f * (float)Math.PI / 180.0f, 10.0f);
 	    //lgt2 = new SpotLight(lColor2, lPoint, atten, lDirect2,
             //			 25.0f * (float)Math.PI / 180.0f, 10.0f);
 	    break;
@@ -1087,12 +1131,15 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 
 	// Set the influencing bounds
 	aLgt.setInfluencingBounds(bounds);
-	lgt1.setInfluencingBounds(bounds);
+	lgtSun.setInfluencingBounds(bounds);
 	//lgt2.setInfluencingBounds(bounds);
 
 	// Add the lights into the scene graph
+        //tgLtSun.addChild(aLgt);
+        //tgLtSun.addChild(lgtSun);
+        //objTrans.addChild(tgLtSun);
 	objTrans.addChild(aLgt);
-	objTrans.addChild(lgt1);
+	objTrans.addChild(lgtSun);
 	//l2Trans.addChild(lgt2);
 
 	// Create a new Behavior object that will perform the desired
@@ -1203,24 +1250,19 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
              try
              {
                  XMLTimerread.sleep(1000);
+                 System.gc();
                  TimerCount++;
                  if (ReadXML())
                  {
                     TransformGroup tg = getTransformEarthMoon();
                     if (tg != null) 
                     {        
-                        
                         Enumeration AllCh = tg.getAllChildren();
                         int nIndex = 0;
                         Object obj = null;
-                        //Enumeration AllPoint = null;
-                        //LineArray AllLines = null;
-                        
-                        //tg.removeChild(6);
-                        //tg.removeChild(7);
-                        //tg.removeChild(8);
                         //scan through the child nodes until we find the one that 
                         //corresponds to our data structure.
+                        /*
                         while( AllCh.hasMoreElements() != false )
                         {
                             obj = (Object) AllCh.nextElement();
@@ -1228,7 +1270,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                 break;
                             nIndex++;
                         }
-                        
                         if (obj != null)
                         {
                             tg.removeChild(nIndex);
@@ -1236,15 +1277,84 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                             MoonTra.setCapability(BranchGroup.ALLOW_DETACH);  
                             MoonTra.addChild(new Shape3D(MoonLines));
                             ((TransformGroup)m_Earth_Moon).addChild(MoonTra);
+                        }*/
+                        
+                        
+                        while( AllCh.hasMoreElements() != false )
+                        {
+                            obj = (Object) AllCh.nextElement();
+                            if (obj == tgMoon)
+                            {
+                                Vector3d vTranslation = new Vector3d((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ));
+                                m_Transform3DMoon.setTranslation(vTranslation);
+                                ((TransformGroup)obj).setTransform(m_Transform3DMoon);
+                                //break;
+                            }
+                            if (obj == tgLtSun)
+                            {
+                                Vector3d vTranslation = new Vector3d((float)(SunX-CenterX)/100, (float)(SunY-CenterY)/100, (float)(SunZ-CenterZ)/100);
+                                m_Transform3DSun.setTranslation(vTranslation);
+                                ((TransformGroup)obj).setTransform(m_Transform3DSun);
+                            }
+                            nIndex++;
                         }
+                        //tg = getTransformEarthMoon();
+                        //AllCh = tg.getAllChildren();
+                        //nIndex = 0;
+                        //obj = null;
+                        //while( AllCh.hasMoreElements() != false )
+                        //{
+                        //    obj = (Object) AllCh.nextElement();
+                        //    if (obj == MoonTra)
+                        //    {
+                        //        tg.removeChild(nIndex);
+                        //        MoonTra = null;
+                        //        MoonTra = new BranchGroup();  
+                        //        MoonTra.setCapability(BranchGroup.ALLOW_DETACH);  
+                        //        MoonTra.addChild(new Shape3D(MoonLines));
+                        //        tg.addChild(MoonTra);
+                        //        //((TransformGroup)m_Earth_Moon).addChild(MoonTra);
+                        //        break;
+                        //    }
+                        //    nIndex++;
+                        //}
+                        
+                        tg = getTransformEarthMoon();
+                        AllCh = tg.getAllChildren();
+                        nIndex = 0;
+                        obj = null;
+                        while( AllCh.hasMoreElements() != false )
+                        {
+                            obj = (Object) AllCh.nextElement();
+                            if (obj == SatTra)
+                            {
+                                tg.removeChild(nIndex);
+                                SatTra = new BranchGroup();  
+                                SatTra.setCapability(BranchGroup.ALLOW_DETACH);  
+                                SatTra.addChild(new Shape3D(Sat0Lines));
+                                Appearance aSatDot = new Appearance();
+                                ColoringAttributes SatDotColor = new ColoringAttributes();
+                                SatDotColor.setColor(new Color3f(2.0f,0f,0f));
+                                aSatDot.setColoringAttributes(SatDotColor);
+                                Shape3D SatDot = new Shape3D(Sat0Dot); 
+                                SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
+                                SatTra.addChild(SatDot);
+                                tg.addChild(SatTra);
+                                break;
+                            }
+                            nIndex++;
+                        }
+                                
                         
                     }
+                    m_TimerCtrl.setText(String.valueOf(TimerCount));
                  }
-                 //m_Earth_Moon
-                 m_TimerCtrl.setText(String.valueOf(TimerCount));
+                 else
+                     m_TimerCtrl.setText("--");
              }
              catch(InterruptedException e)
              {
+                 e.printStackTrace();  
              }
          }
      }
