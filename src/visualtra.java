@@ -1011,15 +1011,15 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             case 0: //objTrans.addChild(new Shape3D(Sat0Lines)); SatDot = new Shape3D(Sat0Dot); 
             SatTra.addChild(new Shape3D(Sat0Lines));SatDot = new Shape3D(Sat0Dot); 
             break;
-            case 1: objTrans.addChild(new Shape3D(Sat1Lines)); SatDot = new Shape3D(Sat1Dot); break;
-            case 2: objTrans.addChild(new Shape3D(Sat2Lines)); SatDot = new Shape3D(Sat2Dot); break;
-            case 3: objTrans.addChild(new Shape3D(Sat3Lines)); SatDot = new Shape3D(Sat3Dot); break;
-            case 4: objTrans.addChild(new Shape3D(Sat4Lines)); SatDot = new Shape3D(Sat4Dot); break;
-            case 5: objTrans.addChild(new Shape3D(Sat5Lines)); SatDot = new Shape3D(Sat5Dot); break;
-            case 6: objTrans.addChild(new Shape3D(Sat6Lines)); SatDot = new Shape3D(Sat6Dot); break;
-            case 7: objTrans.addChild(new Shape3D(Sat7Lines)); SatDot = new Shape3D(Sat7Dot); break;
-            case 8: objTrans.addChild(new Shape3D(Sat8Lines)); SatDot = new Shape3D(Sat8Dot); break;
-            case 9: objTrans.addChild(new Shape3D(Sat9Lines)); SatDot = new Shape3D(Sat9Dot); break;
+            case 1: SatTra.addChild(new Shape3D(Sat1Lines));SatDot = new Shape3D(Sat1Dot); break;
+            case 2: SatTra.addChild(new Shape3D(Sat2Lines));SatDot = new Shape3D(Sat2Dot); break;
+            case 3: SatTra.addChild(new Shape3D(Sat3Lines));SatDot = new Shape3D(Sat3Dot);  break;
+            case 4: SatTra.addChild(new Shape3D(Sat4Lines));SatDot = new Shape3D(Sat4Dot); break;
+            case 5: SatTra.addChild(new Shape3D(Sat5Lines));SatDot = new Shape3D(Sat5Dot); break;
+            case 6: SatTra.addChild(new Shape3D(Sat6Lines));SatDot = new Shape3D(Sat6Dot); break;
+            case 7: SatTra.addChild(new Shape3D(Sat7Lines));SatDot = new Shape3D(Sat7Dot); break;
+            case 8: SatTra.addChild(new Shape3D(Sat8Lines));SatDot = new Shape3D(Sat8Dot); break;
+            case 9: SatTra.addChild(new Shape3D(Sat9Lines));SatDot = new Shape3D(Sat9Dot); break;
             }
             SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
             SatTra.addChild(SatDot);
