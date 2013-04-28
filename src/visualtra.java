@@ -102,7 +102,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     //TextField m_ScaleFieldZ = null;
     //TextField m_ScaleFieldY = null;
     //TextField m_ScaleFieldX = null;
-    TextField m_TimerCtrl = null;
+    //TextField m_TimerCtrl = null;
     int TimerCount = 0;
     private static int m_kWidth = 1400;
     private static int m_kHeight = 800;
@@ -170,6 +170,11 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     TransformGroup tgMoon = null;
     TransformGroup tgLtSun = null;
     BranchGroup SatTra = null;  
+    double TimeJD =0;
+    double TimeJDOld =0;
+    Label m_LabelJD=null;
+    String TimeYYMMDDHHMMSS = "  /  /     :  :  ";
+    Label m_LabelYYMMDDHHMMSS=null;
     
     
     
@@ -455,12 +460,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         try 
         {  
             long CurMils = System.currentTimeMillis();
-            //File fXmlFile = new File("SatCtrl/travisual.xml");  
+            File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
-            //URL url = new URL("http://192.168.0.102/SatCtrl/travisual.xml");
+            //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
+            //URL url = new URL("http://192.168.0.102/SatCtrl/travisual.xml?"+CurMils);
             
-            InputStream fXmlFile = url.openStream();
+            //InputStream fXmlFile = url.openStream();
             
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();  
             
@@ -762,6 +767,25 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     }
                 }
             }
+            nodeLst = doc.getElementsByTagName("ObjectTime");
+            for (int s = 0; s < nodeLst.getLength(); s++) 
+            {
+                Node fstNode = nodeLst.item(s);
+                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                {
+                    Element fstElmnt = (Element) fstNode;
+                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("timeJD");
+                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                    NodeList fstType = fstTypeElmnt.getChildNodes();
+                    String strTimeJD = ((Node) fstType.item(0)).getNodeValue();
+                    TimeJD = Double.valueOf(strTimeJD);
+                    
+                    NodeList fstDElmntLst = fstElmnt.getElementsByTagName("timeYYDDMMHHMMSS");
+                    Element fstDElmnt = (Element) fstDElmntLst.item(0);
+                    NodeList fstD = fstDElmnt.getChildNodes();
+                    TimeYYMMDDHHMMSS = ((Node) fstD.item(0)).getNodeValue();
+                }
+            }
         } 
         catch (Exception e) 
         {  
@@ -777,10 +801,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         CenterX=EarthX;CenterY=EarthY;CenterZ=EarthZ;
         try 
         {
-            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
-            URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
+            TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
+            //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
             texEarth = texLoader.getTexture();
         }
         catch (Exception e) 
@@ -790,10 +814,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             
         try 
         {
-            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
-            URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            //ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
+            //URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //URL ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
             texMoon = texLoader.getTexture();
         
             //URL myURl = URL("http://192.168.0.102/SatCtrl/Map_Earth_2100_by_JamesVF.jpg");
@@ -805,9 +829,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         
         try 
         {
-            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
-            URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
+            //URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
+            //URL ur = new URL("http://192.168.0.102/SatCtrl/SkyMap2.jpg");
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
             texSky = texLoader.getTexture();
             ImageSkyMap = texLoader.getImage();
         } 
@@ -1347,10 +1372,25 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                 
                         
                     }
-                    m_TimerCtrl.setText(String.valueOf(TimerCount));
+                    //JD:_1234567890123456789_time:_00/00/00_00:00:00
+                    m_LabelJD.setText("JD: "+String.valueOf(TimeJD));
+                    if (TimeJDOld != TimeJD)
+                        m_LabelYYMMDDHHMMSS.setText(" time: " + TimeYYMMDDHHMMSS);
+                    else
+                        m_LabelYYMMDDHHMMSS.setText(" stop: " + TimeYYMMDDHHMMSS);
+                    //m_TimerCtrl.setText(String.valueOf(TimeJD));
+                    //m_LabelYYMMDDHHMMSS.setText(TimeYYMMDDHHMMSS);
+
+                    //m_TimerCtrl.setText(String.valueOf(TimerCount));
+                    TimeJDOld = TimeJD;
                  }
                  else
-                     m_TimerCtrl.setText("--");
+                 {
+                     m_LabelJD.setText("unavalable");
+                     m_LabelYYMMDDHHMMSS.setText("unavalable");
+                     //m_TimerCtrl.setText("unavalable"));
+                     //m_TimerCtrl.setText("--");
+                 }
              }
              catch(InterruptedException e)
              {
@@ -1555,8 +1595,14 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //controlPanel.add(m_ViewXZ);
         //m_ViewXY = new Button("X-Y");
         //controlPanel.add(m_ViewXY);
-        m_TimerCtrl = new TextField("0");
-        controlPanel.add(m_TimerCtrl);
+        m_LabelJD = new Label("JD:_1234567890123456789");//
+        
+        controlPanel.add(m_LabelJD);
+        //m_TimerCtrl = new TextField("00000000000");
+        //m_TimerCtrl.setSize(m_TimerCtrl.getWidth()*4, m_TimerCtrl.getHeight());
+        //controlPanel.add(m_TimerCtrl);
+        m_LabelYYMMDDHHMMSS = new Label(" time:_00/00/00_00:00:00");
+        controlPanel.add(m_LabelYYMMDDHHMMSS);
         
         add(controlPanel, BorderLayout.SOUTH);
         m_EarthView.addActionListener(this);
@@ -1564,7 +1610,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //m_ViewYZ.addActionListener(this);
         //m_ViewXZ.addActionListener(this);
         //m_ViewXY.addActionListener(this);
-        
+
+       
         doLayout();
         
     }
