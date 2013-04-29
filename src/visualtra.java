@@ -169,7 +169,16 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     //BranchGroup MoonTra = null;  
     TransformGroup tgMoon = null;
     TransformGroup tgLtSun = null;
-    BranchGroup SatTra = null;  
+    BranchGroup SatTra0 = null;  
+    BranchGroup SatTra1 = null;  
+    BranchGroup SatTra2 = null;  
+    BranchGroup SatTra3 = null;  
+    BranchGroup SatTra4 = null;  
+    BranchGroup SatTra5 = null;  
+    BranchGroup SatTra6 = null;  
+    BranchGroup SatTra7 = null;  
+    BranchGroup SatTra8 = null;  
+    BranchGroup SatTra9 = null;  
     double TimeJD =0;
     double TimeJDOld =0;
     Label m_LabelJD=null;
@@ -588,6 +597,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                 }
             }
             */
+            int iMaxSat = 0;
             for (int iSat=0; iSat<10;iSat++)
             {
                 int I2s = 1;
@@ -596,7 +606,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                 int iSizeOfElements = nodeSatLst.getLength();
                 if (iSizeOfElements > 0)
                 {
-                    MaxSat++;
+                    iMaxSat++;
                     switch(iSat)
                     {
                     case 0:Sat0Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
@@ -733,6 +743,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                     case 2:
                                         Sat2Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat2Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
                                     case 3:
                                         Sat3Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat3Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
@@ -740,6 +751,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                     case 4:
                                         Sat4Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat4Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
                                     case 5:
                                         Sat5Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat5Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
@@ -747,6 +759,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                     case 6:
                                         Sat6Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat6Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
                                     case 7:
                                         Sat7Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat7Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
@@ -754,6 +767,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                     case 8:
                                         Sat8Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat8Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                        break;
                                     case 9:
                                         Sat9Dot.setCoordinate((s-(iSizeOfElements-I2s))*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
                                         Sat9Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
@@ -767,6 +781,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     }
                 }
             }
+            MaxSat = iMaxSat;
             nodeLst = doc.getElementsByTagName("ObjectTime");
             for (int s = 0; s < nodeLst.getLength(); s++) 
             {
@@ -1020,36 +1035,34 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //MoonTra.setCapability(BranchGroup.ALLOW_DETACH);  
         //MoonTra.addChild(new Shape3D(MoonLines));
         //objTrans.addChild(MoonTra);
-        
-        SatTra = new BranchGroup();  
-        SatTra.setCapability(BranchGroup.ALLOW_DETACH);  
+        Appearance aSatDot = new Appearance();
+        ColoringAttributes SatDotColor = new ColoringAttributes();
+        SatDotColor.setColor(new Color3f(2.0f,0f,0f));
+        aSatDot.setColoringAttributes(SatDotColor);
         for (int iSat=0; iSat<MaxSat;iSat++)
         {
             
-            Appearance aSatDot = new Appearance();
-            ColoringAttributes SatDotColor = new ColoringAttributes();
-            SatDotColor.setColor(new Color3f(2.0f,0f,0f));
-            aSatDot.setColoringAttributes(SatDotColor);
+            
+            
             Shape3D SatDot = null;        
             switch(iSat)
             {
             case 0: //objTrans.addChild(new Shape3D(Sat0Lines)); SatDot = new Shape3D(Sat0Dot); 
-            SatTra.addChild(new Shape3D(Sat0Lines));SatDot = new Shape3D(Sat0Dot); 
-            break;
-            case 1: SatTra.addChild(new Shape3D(Sat1Lines));SatDot = new Shape3D(Sat1Dot); break;
-            case 2: SatTra.addChild(new Shape3D(Sat2Lines));SatDot = new Shape3D(Sat2Dot); break;
-            case 3: SatTra.addChild(new Shape3D(Sat3Lines));SatDot = new Shape3D(Sat3Dot);  break;
-            case 4: SatTra.addChild(new Shape3D(Sat4Lines));SatDot = new Shape3D(Sat4Dot); break;
-            case 5: SatTra.addChild(new Shape3D(Sat5Lines));SatDot = new Shape3D(Sat5Dot); break;
-            case 6: SatTra.addChild(new Shape3D(Sat6Lines));SatDot = new Shape3D(Sat6Dot); break;
-            case 7: SatTra.addChild(new Shape3D(Sat7Lines));SatDot = new Shape3D(Sat7Dot); break;
-            case 8: SatTra.addChild(new Shape3D(Sat8Lines));SatDot = new Shape3D(Sat8Dot); break;
-            case 9: SatTra.addChild(new Shape3D(Sat9Lines));SatDot = new Shape3D(Sat9Dot); break;
+            SatTra0= new BranchGroup();SatTra0.setCapability(BranchGroup.ALLOW_DETACH);  SatTra0.addChild(new Shape3D(Sat0Lines));SatDot = new Shape3D(Sat0Dot); SatDot.setAppearance(aSatDot);SatTra0.addChild(SatDot); objTrans.addChild(SatTra0);break;
+            case 1:SatTra1= new BranchGroup();SatTra1.setCapability(BranchGroup.ALLOW_DETACH);  SatTra1.addChild(new Shape3D(Sat1Lines));SatDot = new Shape3D(Sat1Dot); SatDot.setAppearance(aSatDot);SatTra1.addChild(SatDot); objTrans.addChild(SatTra1);break;
+            case 2:SatTra2= new BranchGroup();SatTra2.setCapability(BranchGroup.ALLOW_DETACH);  SatTra2.addChild(new Shape3D(Sat2Lines));SatDot = new Shape3D(Sat2Dot); SatDot.setAppearance(aSatDot);SatTra2.addChild(SatDot); objTrans.addChild(SatTra2);break;
+            case 3:SatTra3= new BranchGroup();SatTra3.setCapability(BranchGroup.ALLOW_DETACH);  SatTra3.addChild(new Shape3D(Sat3Lines));SatDot = new Shape3D(Sat3Dot); SatDot.setAppearance(aSatDot);SatTra3.addChild(SatDot); objTrans.addChild(SatTra3);break;
+            case 4:SatTra4= new BranchGroup();SatTra4.setCapability(BranchGroup.ALLOW_DETACH);  SatTra4.addChild(new Shape3D(Sat4Lines));SatDot = new Shape3D(Sat4Dot); SatDot.setAppearance(aSatDot);SatTra4.addChild(SatDot); objTrans.addChild(SatTra4);break;
+            case 5:SatTra5= new BranchGroup();SatTra5.setCapability(BranchGroup.ALLOW_DETACH);  SatTra5.addChild(new Shape3D(Sat5Lines));SatDot = new Shape3D(Sat5Dot); SatDot.setAppearance(aSatDot);SatTra5.addChild(SatDot); objTrans.addChild(SatTra5);break;
+            case 6:SatTra6= new BranchGroup();SatTra6.setCapability(BranchGroup.ALLOW_DETACH);  SatTra6.addChild(new Shape3D(Sat6Lines));SatDot = new Shape3D(Sat6Dot); SatDot.setAppearance(aSatDot);SatTra6.addChild(SatDot); objTrans.addChild(SatTra6);break;
+            case 7:SatTra7= new BranchGroup();SatTra7.setCapability(BranchGroup.ALLOW_DETACH);  SatTra7.addChild(new Shape3D(Sat7Lines));SatDot = new Shape3D(Sat7Dot); SatDot.setAppearance(aSatDot);SatTra7.addChild(SatDot); objTrans.addChild(SatTra7);break;
+            case 8:SatTra8= new BranchGroup();SatTra8.setCapability(BranchGroup.ALLOW_DETACH);  SatTra8.addChild(new Shape3D(Sat8Lines));SatDot = new Shape3D(Sat8Dot); SatDot.setAppearance(aSatDot);SatTra8.addChild(SatDot); objTrans.addChild(SatTra8);break;
+            case 9:SatTra9= new BranchGroup();SatTra9.setCapability(BranchGroup.ALLOW_DETACH);  SatTra9.addChild(new Shape3D(Sat9Lines));SatDot = new Shape3D(Sat9Dot); SatDot.setAppearance(aSatDot);SatTra9.addChild(SatDot); objTrans.addChild(SatTra9);break;
             }
-            SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
-            SatTra.addChild(SatDot);
-            objTrans.addChild(SatTra);
+            //SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
+            //SatTra.addChild(SatDot);
         }
+        
         
         // Create a Sun Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
@@ -1323,54 +1336,99 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                             }
                             nIndex++;
                         }
-                        //tg = getTransformEarthMoon();
-                        //AllCh = tg.getAllChildren();
-                        //nIndex = 0;
-                        //obj = null;
-                        //while( AllCh.hasMoreElements() != false )
-                        //{
-                        //    obj = (Object) AllCh.nextElement();
-                        //    if (obj == MoonTra)
-                        //    {
-                        //        tg.removeChild(nIndex);
-                        //        MoonTra = null;
-                        //        MoonTra = new BranchGroup();  
-                        //        MoonTra.setCapability(BranchGroup.ALLOW_DETACH);  
-                        //        MoonTra.addChild(new Shape3D(MoonLines));
-                        //        tg.addChild(MoonTra);
-                        //        //((TransformGroup)m_Earth_Moon).addChild(MoonTra);
-                        //        break;
-                        //    }
-                        //    nIndex++;
-                        //}
-                        
-                        tg = getTransformEarthMoon();
-                        AllCh = tg.getAllChildren();
-                        nIndex = 0;
-                        obj = null;
-                        while( AllCh.hasMoreElements() != false )
+                        Appearance aSatDot = new Appearance();
+                        ColoringAttributes SatDotColor = new ColoringAttributes();
+                        SatDotColor.setColor(new Color3f(2.0f,0f,0f));
+                        aSatDot.setColoringAttributes(SatDotColor);
+                        Shape3D SatDot = null;
+                        for (int iSat=0; iSat<MaxSat;iSat++)
                         {
-                            obj = (Object) AllCh.nextElement();
-                            if (obj == SatTra)
-                            {
-                                tg.removeChild(nIndex);
-                                SatTra = new BranchGroup();  
-                                SatTra.setCapability(BranchGroup.ALLOW_DETACH);  
-                                SatTra.addChild(new Shape3D(Sat0Lines));
-                                Appearance aSatDot = new Appearance();
-                                ColoringAttributes SatDotColor = new ColoringAttributes();
-                                SatDotColor.setColor(new Color3f(2.0f,0f,0f));
-                                aSatDot.setColoringAttributes(SatDotColor);
-                                Shape3D SatDot = new Shape3D(Sat0Dot); 
-                                SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
-                                SatTra.addChild(SatDot);
-                                tg.addChild(SatTra);
-                                break;
-                            }
-                            nIndex++;
-                        }
-                                
+                            tg = getTransformEarthMoon();
+                            AllCh = tg.getAllChildren();
+                            nIndex = 0;
+                            obj = null;
+                            boolean iFound;
                         
+                            while( AllCh.hasMoreElements() != false )
+                            {
+                                obj = (Object) AllCh.nextElement();
+                                iFound = false;
+                                switch(iSat)
+                                {
+                                case 0:if (obj == SatTra0) iFound = true;break;
+                                case 1:if (obj == SatTra1) iFound = true;break;
+                                case 2:if (obj == SatTra2) iFound = true;break;
+                                case 3:if (obj == SatTra3) iFound = true;break;
+                                case 4:if (obj == SatTra4) iFound = true;break;
+                                case 5:if (obj == SatTra5) iFound = true;break;
+                                case 6:if (obj == SatTra6) iFound = true;break;
+                                case 7:if (obj == SatTra7) iFound = true;break;
+                                case 8:if (obj == SatTra8) iFound = true;break;
+                                case 9:if (obj == SatTra9) iFound = true;break;
+                                }
+                                if (iFound)
+                                {
+                                    tg.removeChild(nIndex);
+                                    switch(iSat)
+                                    {
+                                    case 0:SatTra0 = new BranchGroup();SatTra0.setCapability(BranchGroup.ALLOW_DETACH);  SatTra0.addChild(new Shape3D(Sat0Lines));SatDot = new Shape3D(Sat0Dot);SatDot.setAppearance(aSatDot);SatTra0.addChild(SatDot);tg.addChild(SatTra0);break;
+                                    case 1:SatTra1 = new BranchGroup();SatTra1.setCapability(BranchGroup.ALLOW_DETACH);  SatTra1.addChild(new Shape3D(Sat1Lines));SatDot = new Shape3D(Sat1Dot);SatDot.setAppearance(aSatDot);SatTra1.addChild(SatDot);tg.addChild(SatTra1);break;
+                                    case 2:SatTra2 = new BranchGroup();SatTra2.setCapability(BranchGroup.ALLOW_DETACH);  SatTra2.addChild(new Shape3D(Sat2Lines));SatDot = new Shape3D(Sat2Dot);SatDot.setAppearance(aSatDot);SatTra2.addChild(SatDot);tg.addChild(SatTra2);break;
+                                    case 3:SatTra3 = new BranchGroup();SatTra3.setCapability(BranchGroup.ALLOW_DETACH);  SatTra3.addChild(new Shape3D(Sat3Lines));SatDot = new Shape3D(Sat3Dot);SatDot.setAppearance(aSatDot);SatTra3.addChild(SatDot);tg.addChild(SatTra3);break;
+                                    case 4:SatTra4 = new BranchGroup();SatTra4.setCapability(BranchGroup.ALLOW_DETACH);  SatTra4.addChild(new Shape3D(Sat4Lines));SatDot = new Shape3D(Sat4Dot);SatDot.setAppearance(aSatDot);SatTra4.addChild(SatDot);tg.addChild(SatTra4);break;
+                                    case 5:SatTra5 = new BranchGroup();SatTra5.setCapability(BranchGroup.ALLOW_DETACH);  SatTra5.addChild(new Shape3D(Sat5Lines));SatDot = new Shape3D(Sat5Dot);SatDot.setAppearance(aSatDot);SatTra5.addChild(SatDot);tg.addChild(SatTra5);break;
+                                    case 6:SatTra6 = new BranchGroup();SatTra6.setCapability(BranchGroup.ALLOW_DETACH);  SatTra6.addChild(new Shape3D(Sat6Lines));SatDot = new Shape3D(Sat6Dot);SatDot.setAppearance(aSatDot);SatTra6.addChild(SatDot);tg.addChild(SatTra6);break;
+                                    case 7:SatTra7 = new BranchGroup();SatTra7.setCapability(BranchGroup.ALLOW_DETACH);  SatTra7.addChild(new Shape3D(Sat7Lines));SatDot = new Shape3D(Sat7Dot);SatDot.setAppearance(aSatDot);SatTra7.addChild(SatDot);tg.addChild(SatTra7);break;
+                                    case 8:SatTra8 = new BranchGroup();SatTra8.setCapability(BranchGroup.ALLOW_DETACH);  SatTra8.addChild(new Shape3D(Sat8Lines));SatDot = new Shape3D(Sat8Dot);SatDot.setAppearance(aSatDot);SatTra8.addChild(SatDot);tg.addChild(SatTra8);break;
+                                    case 9:SatTra9 = new BranchGroup();SatTra9.setCapability(BranchGroup.ALLOW_DETACH);  SatTra9.addChild(new Shape3D(Sat9Lines));SatDot = new Shape3D(Sat9Dot);SatDot.setAppearance(aSatDot);SatTra9.addChild(SatDot);tg.addChild(SatTra9);break;
+                                    }
+                                }
+                                //if (obj == SatTra)
+                                //{
+                                //    tg.removeChild(nIndex);
+                                //    SatTra = new BranchGroup();  
+                                //    SatTra.setCapability(BranchGroup.ALLOW_DETACH);  
+                                //    for (int iSat=0; iSat<MaxSat;iSat++)
+                                //    {
+                                //        switch(iSat)
+                                //        {
+                                //        case 0:SatTra.addChild(new Shape3D(Sat0Lines));break;
+                                //        case 1:SatTra.addChild(new Shape3D(Sat1Lines));break;
+                                //        case 2:SatTra.addChild(new Shape3D(Sat2Lines));break;
+                                //        case 3:SatTra.addChild(new Shape3D(Sat3Lines));break;
+                                //        case 4:SatTra.addChild(new Shape3D(Sat4Lines));break;
+                                //        case 5:SatTra.addChild(new Shape3D(Sat5Lines));break;
+                                //        case 6:SatTra.addChild(new Shape3D(Sat6Lines));break;
+                                //        case 7:SatTra.addChild(new Shape3D(Sat7Lines));break;
+                                //        case 8:SatTra.addChild(new Shape3D(Sat8Lines));break;
+                                //        case 9:SatTra.addChild(new Shape3D(Sat9Lines));break;
+                                //        }
+                                //        Appearance aSatDot = new Appearance();
+                                //        ColoringAttributes SatDotColor = new ColoringAttributes();
+                                //        SatDotColor.setColor(new Color3f(2.0f,0f,0f));
+                                //        aSatDot.setColoringAttributes(SatDotColor);
+                                //        Shape3D SatDot = null;
+                                //        switch(iSat)
+                                //        {
+                                //        case 0:SatDot = new Shape3D(Sat0Dot); break;
+                                //        case 1:SatDot = new Shape3D(Sat1Dot); break;
+                                //        case 2:SatDot = new Shape3D(Sat2Dot); break;
+                                //        case 3:SatDot = new Shape3D(Sat3Dot); break;
+                                //        case 4:SatDot = new Shape3D(Sat4Dot); break;
+                                //        case 5:SatDot = new Shape3D(Sat5Dot); break;
+                                //        case 6:SatDot = new Shape3D(Sat6Dot); break;
+                                //        case 7:SatDot = new Shape3D(Sat7Dot); break;
+                                //        case 8:SatDot = new Shape3D(Sat8Dot); break;
+                                //        case 9:SatDot = new Shape3D(Sat9Dot); break;
+                                //        }
+                                //        SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
+                                //        SatTra.addChild(SatDot);
+                                //    }
+                                //    tg.addChild(SatTra);
+                                //    break;
+                                nIndex++;
+                            }
+                        }
                     }
                     //JD:_1234567890123456789_time:_00/00/00_00:00:00
                     m_LabelJD.setText("JD: "+String.valueOf(TimeJD));
