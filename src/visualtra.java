@@ -469,12 +469,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         try 
         {  
             long CurMils = System.currentTimeMillis();
-            File fXmlFile = new File("SatCtrl/travisual.xml");  
+            //File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
+            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
             //URL url = new URL("http://192.168.0.102/SatCtrl/travisual.xml?"+CurMils);
             
-            //InputStream fXmlFile = url.openStream();
+            InputStream fXmlFile = url.openStream();
             
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();  
             
@@ -601,7 +601,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             for (int iSat=0; iSat<10;iSat++)
             {
                 int I2s = 1;
-                String NameObject = "Sat"+iSat+"Object";
+                String NameObject = "Sat"+iSat;
                 NodeList nodeSatLst = doc.getElementsByTagName(NameObject);
                 int iSizeOfElements = nodeSatLst.getLength();
                 if (iSizeOfElements > 0)
@@ -654,10 +654,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                         if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
                         {
                             Element fstElmnt = (Element) fstNode;
-                            NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
-                            Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
-                            NodeList fstType = fstTypeElmnt.getChildNodes();
-                            String strType = ((Node) fstType.item(0)).getNodeValue(); // must be MoonTra
+                            //NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("ID");
+                            //Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                            //NodeList fstType = fstTypeElmnt.getChildNodes();
+                            //String strType = ((Node) fstType.item(0)).getNodeValue(); // must be MoonTra
                     
                             NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");
                             Element lstXElmnt = (Element) lstXElmntLst.item(0);
@@ -816,10 +816,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         CenterX=EarthX;CenterY=EarthY;CenterZ=EarthZ;
         try 
         {
-            TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
-            //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
+            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
+            URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
-            //TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( ur, this);
             texEarth = texLoader.getTexture();
         }
         catch (Exception e) 
@@ -829,10 +829,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             
         try 
         {
-            TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
-            //URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
+            URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
             //URL ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            //TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( ur, this);
             texMoon = texLoader.getTexture();
         
             //URL myURl = URL("http://192.168.0.102/SatCtrl/Map_Earth_2100_by_JamesVF.jpg");
@@ -844,10 +844,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         
         try 
         {
-            TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
-            //URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
+            //TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
+            URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
             //URL ur = new URL("http://192.168.0.102/SatCtrl/SkyMap2.jpg");
-            //TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( ur, this);
             texSky = texLoader.getTexture();
             ImageSkyMap = texLoader.getImage();
         } 
