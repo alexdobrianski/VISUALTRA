@@ -471,8 +471,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             long CurMils = System.currentTimeMillis();
             //File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
-            //URL url = new URL("http://192.168.0.102/SatCtrl/travisual.xml?"+CurMils);
+            URL url = new URL("http://24.84.57.253/SatCtrl/PostTra.aspx?"+CurMils);
+            //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
+            //URL url = new URL("http://localhost/SatCtrl/PostTra.aspx?"+CurMils);
             
             InputStream fXmlFile = url.openStream();
             
@@ -818,7 +819,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
             URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
-            //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
+            //URL ur = new URL("http://localhost/SatCtrl/Earth-Color_960_Koord.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
             texEarth = texLoader.getTexture();
         }
@@ -831,7 +832,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
             URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            //URL ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            //URL ur = new URL("http://localhost/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
             texMoon = texLoader.getTexture();
         
@@ -846,7 +847,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
             URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
-            //URL ur = new URL("http://192.168.0.102/SatCtrl/SkyMap2.jpg");
+            //URL ur = new URL("http://localhost/SatCtrl/SkyMap2.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
             texSky = texLoader.getTexture();
             ImageSkyMap = texLoader.getImage();
