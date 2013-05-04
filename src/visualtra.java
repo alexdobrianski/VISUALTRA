@@ -184,7 +184,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     Label m_LabelJD=null;
     String TimeYYMMDDHHMMSS = "  /  /     :  :  ";
     Label m_LabelYYMMDDHHMMSS=null;
-    
+    long delaymsec = 1000;
+    long Olddelaymsec = 1000;
     
     
     
@@ -466,6 +467,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     public boolean ReadXML()
     {
         boolean bRet = false;
+        //delaymsec = 1000;
         try 
         {  
             long CurMils = System.currentTimeMillis();
@@ -601,7 +603,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             int iMaxSat = 0;
             for (int iSat=0; iSat<10;iSat++)
             {
-                int I2s = 1;
+                int I2s = 3;
                 String NameObject = "Sat"+iSat;
                 NodeList nodeSatLst = doc.getElementsByTagName(NameObject);
                 int iSizeOfElements = nodeSatLst.getLength();
@@ -800,12 +802,19 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     Element fstDElmnt = (Element) fstDElmntLst.item(0);
                     NodeList fstD = fstDElmnt.getChildNodes();
                     TimeYYMMDDHHMMSS = ((Node) fstD.item(0)).getNodeValue();
+                    
+                    NodeList fstReloadElmntLst = fstElmnt.getElementsByTagName("ReloadInSec");
+                    Element fstReloadElmnt = (Element) fstReloadElmntLst.item(0);
+                    NodeList fstReload = fstReloadElmnt.getChildNodes();
+                    delaymsec = Long.valueOf(((Node) fstReload.item(0)).getNodeValue());
+                    delaymsec *= 1000;
                 }
             }
         } 
         catch (Exception e) 
         {  
             e.printStackTrace();  
+            delaymsec += 1000;
         }
         return bRet;
     }
@@ -1288,7 +1297,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
              repaint();
              try
              {
-                 XMLTimerread.sleep(1000);
+                 XMLTimerread.sleep(delaymsec);
                  System.gc();
                  TimerCount++;
                  if (ReadXML())
@@ -1434,9 +1443,16 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     //JD:_1234567890123456789_time:_00/00/00_00:00:00
                     m_LabelJD.setText("JD: "+String.valueOf(TimeJD));
                     if (TimeJDOld != TimeJD)
+                    {
                         m_LabelYYMMDDHHMMSS.setText(" time: " + TimeYYMMDDHHMMSS);
+                        Olddelaymsec = delaymsec;
+                    }
                     else
+                    {
                         m_LabelYYMMDDHHMMSS.setText(" stop: " + TimeYYMMDDHHMMSS);
+                        Olddelaymsec +=1000;
+                        delaymsec = Olddelaymsec;
+                    }
                     //m_TimerCtrl.setText(String.valueOf(TimeJD));
                     //m_LabelYYMMDDHHMMSS.setText(TimeYYMMDDHHMMSS);
 
