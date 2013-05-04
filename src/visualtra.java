@@ -66,12 +66,14 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     private double EarthY;
     private double EarthZ;
     private double EarthR;
+    private double EarthRot;
     Texture texEarth;
     
     private double MoonX;
     private double MoonY;
     private double MoonZ;
     private double MoonR;
+    private double MoonRot;
     Texture texMoon;
     
     private double SunX;
@@ -523,12 +525,19 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     Element lstRElmnt = (Element) lstRElmntLst.item(0);
                     NodeList lstR = lstRElmnt.getChildNodes();
                     String strR = ((Node) lstR.item(0)).getNodeValue();
-                    //System.out.println("Z: " + strZ);                    
+                    //System.out.println("R: " + strZ);                    
+
+                    NodeList lstRotElmntLst = fstElmnt.getElementsByTagName("Rot");
+                    Element lstRotElmnt = (Element) lstRotElmntLst.item(0);
+                    NodeList lstRot = lstRotElmnt.getChildNodes();
+                    String strRot = ((Node) lstRot.item(0)).getNodeValue();
+                    //System.out.println("R: " + strZ);                    
                     
                     if (strType.compareTo("Earth") == 0)
                     {
                         EarthX = Double.valueOf(strX); EarthY= Double.valueOf(strY); EarthZ= -Double.valueOf(strZ);
                         EarthR= Double.valueOf(strR);
+                        EarthRot= Double.valueOf(strRot);
                         EarthX /=Coef;EarthY /=Coef;EarthZ /=Coef;EarthR /=Coef;
                     }
                     
@@ -536,6 +545,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     {
                         MoonX = Double.valueOf(strX); MoonY= Double.valueOf(strY); MoonZ= -Double.valueOf(strZ);
                         MoonR= Double.valueOf(strR);
+                        MoonRot= Double.valueOf(strRot);
                         MoonX /=Coef;MoonY /=Coef;MoonZ /=Coef;MoonR /=Coef;
                     }
                     
