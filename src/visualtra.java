@@ -67,6 +67,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     private double EarthZ;
     private double EarthR;
     private double EarthRot;
+    private double EarthRotOld;
+    private double tCountEarthRot; // rotate onec per 10 iterations ????
     Texture texEarth;
     
     private double MoonX;
@@ -74,6 +76,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     private double MoonZ;
     private double MoonR;
     private double MoonRot;
+    private double MoonRotOld;
     Texture texMoon;
     
     private double SunX;
@@ -128,6 +131,13 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     protected Transform3D m_Transform3D = null;
     protected Transform3D m_TransformX = null;
     protected Transform3D m_TransformY = null;
+    //protected Transform3D m_EarthRotationDelta = null;
+    protected Transform3D m_EarthRotation = null;
+    protected TransformGroup m_TransformGrEarthRotation = null;
+    
+    //protected Transform3D m_MoonRotationDelta = null;
+    protected Transform3D m_MoonRotation = null;
+    protected TransformGroup m_TransformGrMoonRotation = null;
     
     protected Transform3D m_Transform3DMoon = null;
     protected Transform3D m_Transform3DSun = null;
@@ -168,6 +178,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     ImageComponent2D ImageSkyMap = null;
     Texture texSky;
     Shape3D Sat0Line = null;
+    
+    TransformGroup tgEarthRot = null;
     //BranchGroup MoonTra = null;  
     TransformGroup tgMoon = null;
     TransformGroup tgLtSun = null;
@@ -326,7 +338,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     {
                     case VIEW_Z1:m_Transform3D.setTranslation(new Vector3d(-(MoonX-CenterX),-(MoonY-CenterY),-(MoonZ-CenterZ)));break;
                     case VIEW_Z2:m_Transform3D.setTranslation(new Vector3d(-(MoonX-CenterX),(MoonY-CenterY),(MoonZ-CenterZ)));break;
-                    case VIEW_Z3:m_Transform3D.setTranslation(new Vector3d((MoonX-CenterX),-(MoonY-CenterY),(MoonZ-CenterZ)));break;
+                    case VIEW_Z3:m_Transform3D.setTranslation(new Vector3d((MoonX-CenterX),(MoonY-CenterY),-(MoonZ-CenterZ)));break;
                     case VIEW_Z4:m_Transform3D.setTranslation(new Vector3d(-(MoonX-CenterX),(MoonY-CenterY),-(MoonZ-CenterZ)));break;
                     }
                     
@@ -837,8 +849,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         try 
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
-            URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
+            URL ur = new URL("http://24.84.57.253/SatCtrl/earthsatellitemap.jpg");
+            //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/Earth-Color_960_Koord.jpg");
+            //URL ur = new URL("http://localhost/SatCtrl/earthsatellitemap.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
             texEarth = texLoader.getTexture();
         }
@@ -900,7 +914,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //objRoot.addChild(objScale);
 
 	// Create a bounds for the background and lights
-	BoundingSphere bounds =  new BoundingSphere(new Point3d(0.0,0.0,0.0), 1000.0);
+	BoundingSphere bounds =  new BoundingSphere(new Point3d(0.0,0.0,0.0), 10000.0);
         
         // Set up the background
 	Background bg = new Background(bgColor);
@@ -911,10 +925,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	
         
         BranchGroup backGeoBranch = new BranchGroup();
-        Sphere sphereObj = new Sphere(1.0f, Sphere.GENERATE_NORMALS | Sphere.GENERATE_NORMALS_INWARD | Sphere.GENERATE_TEXTURE_COORDS, 100);
+        Sphere sphereObj = new Sphere(8.0f, Sphere.GENERATE_NORMALS | Sphere.GENERATE_NORMALS_INWARD | Sphere.GENERATE_TEXTURE_COORDS, 100);
         Appearance backgroundApp = sphereObj.getAppearance();
         backgroundApp.setTexture(texSky);
-        backGeoBranch.addChild(sphereObj);
+        //backGeoBranch.addChild(sphereObj);
        
         bg.setGeometry(backGeoBranch);
 
@@ -968,9 +982,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         m_Transform3DSun= new Transform3D();
         
         // create the mouse scale behavior and set limits
-        TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.1f);
+        TornadoMouseScale mouseScale = new TornadoMouseScale(5, 0.05f);
         mouseScale.setMinScale(new Point3d(0.1, 0.1, 0.1));
-        mouseScale.setMaxScale(new Point3d(10, 10, 10));
+        mouseScale.setMaxScale(new Point3d(20, 20, 20));
         mouseScale.setObject(objTrans);
         mouseScale.setChangeListener(this);
         mouseScale.setSchedulingBounds(getApplicationBounds());
@@ -983,7 +997,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         mouseRotate.setSchedulingBounds(getApplicationBounds());
         objTrans.addChild(mouseRotate);
         // create the mouse translate behavior and set limits
-        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.0002f);
+        TornadoMouseTranslate mouseTrans = new TornadoMouseTranslate(0.0004f);
         mouseTrans.setObject(objTrans);
         mouseTrans.setChangeListener(this);
         mouseTrans.setMinTranslate(new Point3d(-10, -10, -10));
@@ -1019,7 +1033,33 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         LocationEarth.setTranslation(vectorEarth);
         TransformGroup tg = new TransformGroup(LocationEarth);
         tg.addChild(sphEarth);
-        objTrans.addChild(tg);
+        // rotation of the earth
+        
+            Transform3D m_EarthRotationDelta = new Transform3D();
+            m_EarthRotation = new Transform3D();
+            double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
+            EarthRotOld = EarthRot;
+            m_EarthRotationDelta.rotY(y_angle);
+            Matrix4d mat = new Matrix4d();
+            m_EarthRotation.get(mat);
+            m_EarthRotation.mul(m_EarthRotation, m_EarthRotationDelta);
+            Vector3d translation = new Vector3d(mat.m03, mat.m13, mat.m23);
+            m_EarthRotation.setTranslation(translation);
+
+            m_TransformGrEarthRotation = new TransformGroup(m_EarthRotation);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_PICKABLE_READ);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_PICKABLE_WRITE);
+            m_TransformGrEarthRotation.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+
+            m_TransformGrEarthRotation.addChild(tg);
+            m_TransformGrEarthRotation.setTransform(m_EarthRotation);
+            objTrans.addChild(m_TransformGrEarthRotation);
+            
+        //objTrans.addChild(tg);
 
         // Create a Moon Sphere object, generate one copy of the sphere,
 	// and add it into the scene graph.
@@ -1035,6 +1075,32 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         texAttrMoon.setTextureMode(TextureAttributes.COMBINE);//.COMBINE);//.BLEND);//.MODULATE);
         aMoon.setTextureAttributes(texAttrMoon);
 	Sphere sphMoon = new Sphere((float)MoonR, Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS, 180, aMoon);//.GENERATE_NORMALS, 180, a);
+
+            Transform3D m_MoonRotationDelta = new Transform3D();
+            m_MoonRotation = new Transform3D();
+            double y_anglem =  MoonRot * 3.14159265358979323846264338327950288/ 180;
+            MoonRotOld = MoonRot;
+            m_MoonRotationDelta.rotY(-y_anglem);
+            Matrix4d matM = new Matrix4d();
+            m_MoonRotation.get(matM);
+            m_MoonRotation.mul(m_MoonRotation, m_MoonRotationDelta);
+            Vector3d translationM = new Vector3d(matM.m03, matM.m13, matM.m23);
+            m_MoonRotation.setTranslation(translationM);
+
+            m_TransformGrMoonRotation = new TransformGroup(m_MoonRotation);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_CHILDREN_READ);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_PICKABLE_READ);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_PICKABLE_WRITE);
+            m_TransformGrMoonRotation.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+
+            m_TransformGrMoonRotation.addChild(sphMoon);
+            m_TransformGrMoonRotation.setTransform(m_MoonRotation);
+            //objTrans.addChild(m_TransformGrEarthRotation);
+
+        
         
         Transform3D LocationMoon = new Transform3D();
         Vector3f vectorMoon = new Vector3f((float)(MoonX-CenterX), (float)(MoonY-CenterY), (float)(MoonZ-CenterZ));
@@ -1048,7 +1114,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         tgMoon.setCapability(TransformGroup.ALLOW_PICKABLE_WRITE);
         tgMoon.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
 
-        tgMoon.addChild(sphMoon);
+        tgMoon.addChild(m_TransformGrMoonRotation);
+        //tgMoon.addChild(sphMoon);
         objTrans.addChild(tgMoon);
         
         //MoonTra = new BranchGroup();  
@@ -1061,9 +1128,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         aSatDot.setColoringAttributes(SatDotColor);
         for (int iSat=0; iSat<MaxSat;iSat++)
         {
-            
-            
-            
             Shape3D SatDot = null;        
             switch(iSat)
             {
@@ -1199,54 +1263,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	objTrans.addChild(aLgt);
 	objTrans.addChild(lgtSun);
 	//l2Trans.addChild(lgt2);
-
-	// Create a new Behavior object that will perform the desired
-	// operation on the specified transform object and add it into the
-	// scene graph.
-	//Transform3D yAxis = new Transform3D();
-	//Alpha rotor1Alpha = new Alpha(-1, Alpha.INCREASING_ENABLE,
-	//			     0, 0,
-	//			     4000, 0, 0,
-	//			     0, 0, 0);
-	//RotationInterpolator rotator1 =
-	//    new RotationInterpolator(rotor1Alpha,
-	//			     l1RotTrans,
-	//			     yAxis,
-	//			     0.0f, 0);//(float) Math.PI*2.0f);
-	//rotator1.setSchedulingBounds(bounds);
-	//l1RotTrans.addChild(rotator1);
-
-	// Create a new Behavior object that will perform the desired
-	// operation on the specified transform object and add it into the
-	// scene graph.
-	//Alpha rotor2Alpha = new Alpha(-1, Alpha.INCREASING_ENABLE,
-	//			     0, 0,
-	//			     1000, 0, 0,
-	//			     0, 0, 0);
-	//RotationInterpolator rotator2 =
-	//    new RotationInterpolator(rotor2Alpha,
-	//			     l2RotTrans,
-	//			     yAxis,
-	//			     0.0f, 0);
-	//bounds = new BoundingSphere(new Point3d(0.0,0.0,0.0), 10000.0);
-	//rotator2.setSchedulingBounds(bounds);
-	//l2RotTrans.addChild(rotator2);
-        
-        // create some axis for the world to show it has been rotated
-        //ColorCube axis = new ColorCube(5.0);
-        //Appearance app = new Appearance();
-        //app.setPolygonAttributes(new PolygonAttributes( PolygonAttributes.POLYGON_LINE, PolygonAttributes.CULL_NONE, 0));
-        //axis.setAppearance(app);
-        //objTrans1.addChild(axis);
-        
-        //BoundingSphere bounds =  new BoundingSphere(new Point3d(0.0,0.0,0.0), 1000.0);
-        
         
         objTrans1.addChild(objTrans);
         m_SceneBranchGroup.addChild(objTrans1);
         
         ViewPlatform vp = new ViewPlatform();
-        vp.setViewAttachPolicy(View.RELATIVE_TO_FIELD_OF_VIEW);//.RELATIVE_TO_FIELD_OF_VIEW);
+        vp.setViewAttachPolicy(View.CYCLOPEAN_EYE_VIEW);//.RELATIVE_TO_FIELD_OF_VIEW);
         vp.setActivationRadius(getViewPlatformActivationRadius());
         
         BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
@@ -1254,12 +1276,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         View view = new View();
         PhysicalBody pb = new PhysicalBody();
         PhysicalEnvironment pe = new PhysicalEnvironment();
-        //AudioDevice audioDevice = createAudioDevice(pe);
-        //if (audioDevice != null) 
-        //{
-        //    pe.setAudioDevice(audioDevice);
-        //        audioDevice.initialize();
-        //}
        
         view.setPhysicalEnvironment(pe);
         view.setPhysicalBody(pb);
@@ -1278,22 +1294,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
         locale.addBranchGraph(m_SceneBranchGroup);
         addViewBranchGroup(locale, viewBranchGroup);
-        
-  /*      
-        Locale locale = new Locale(u);
-        BranchGroup sceneBranchGroup = createSceneBranchGroup(scene);
-        
-        ViewPlatform vp = createViewPlatform();
-        BranchGroup viewBranchGroup = createViewBranchGroup(getViewTransformGroupArray(), vp);
-        createView(vp);
-        Background background = createBackground();
-        if (background != null)
-            sceneBranchGroup.addChild(background);
-        // m_Java3dTree.recursiveApplyCapability(sceneBranchGroup);
-        //m_Java3dTree.recursiveApplyCapability(viewBranchGroup);
-        locale.addBranchGraph(sceneBranchGroup);
-        addViewBranchGroup(locale, viewBranchGroup);
-    */  
         if(XMLTimerread == null)
         {
              XMLTimerread = new Thread(this);
@@ -1353,6 +1353,23 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                 Vector3d vTranslation = new Vector3d((float)(SunX-CenterX)/100, (float)(SunY-CenterY)/100, (float)(SunZ-CenterZ)/100);
                                 m_Transform3DSun.setTranslation(vTranslation);
                                 ((TransformGroup)obj).setTransform(m_Transform3DSun);
+                            }
+                            if (obj == m_TransformGrEarthRotation)
+                            {
+                                Transform3D m_EarthRotationDelta = new Transform3D();
+                                Transform3D  m_EarthRotation = new Transform3D();
+                                //double y_angle =  (EarthRot-EarthRotOld) * 3.14159265358979323846264338327950288/ 180;
+                                double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
+                                EarthRotOld = EarthRot;
+                                m_EarthRotationDelta.rotY(y_angle);
+                                Matrix4d mat = new Matrix4d();
+                                m_EarthRotation.get(mat);
+                                m_EarthRotation.mul(m_EarthRotation, m_EarthRotationDelta);
+                                Vector3d translation = new Vector3d(mat.m03, mat.m13, mat.m23);
+                                m_EarthRotation.setTranslation(translation);
+
+                                ((TransformGroup)obj).setTransform(m_EarthRotation);
+                                
                             }
                             nIndex++;
                         }
