@@ -57,6 +57,14 @@ import java.awt.image.BufferedImage;
 public class visualtra extends Applet  
 implements ScaleChangeListener, RotationChangeListener, TranslationChangeListener, ActionListener, Runnable
 {
+
+    private double GrStX[] = new double[10];
+    private double GrStY[] = new double[10];
+    private double GrStZ[] = new double[10];
+    private int iGrstMax =0;
+    public LineArray GrLines[]= new LineArray[10];
+    
+    
     private double CenterX;
     private double CenterY;
     private double CenterZ;
@@ -487,6 +495,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             long CurMils = System.currentTimeMillis();
             //File fXmlFile = new File("SatCtrl/travisual.xml");  
             
+            //URL url = new URL("http://192.168.0.102/SatCtrl/PostTra.aspx?"+CurMils);
             URL url = new URL("http://24.84.57.253/SatCtrl/PostTra.aspx?"+CurMils);
             //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
             //URL url = new URL("http://localhost/SatCtrl/PostTra.aspx?"+CurMils);
@@ -547,7 +556,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     
                     if (strType.compareTo("Earth") == 0)
                     {
-                        EarthX = Double.valueOf(strX); EarthY= Double.valueOf(strY); EarthZ= -Double.valueOf(strZ);
+                        //EarthX = Double.valueOf(strX); EarthY= Double.valueOf(strY); EarthZ= -Double.valueOf(strZ);
+                        EarthX = -Double.valueOf(strX); EarthY= Double.valueOf(strY); EarthZ= Double.valueOf(strZ);
                         EarthR= Double.valueOf(strR);
                         EarthRot= Double.valueOf(strRot);
                         EarthX /=Coef;EarthY /=Coef;EarthZ /=Coef;EarthR /=Coef;
@@ -555,7 +565,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     
                     if (strType.compareTo("Moon") == 0)
                     {
-                        MoonX = Double.valueOf(strX); MoonY= Double.valueOf(strY); MoonZ= -Double.valueOf(strZ);
+                        //MoonX = Double.valueOf(strX); MoonY= Double.valueOf(strY); MoonZ= -Double.valueOf(strZ);
+                        MoonX = -Double.valueOf(strX); MoonY= Double.valueOf(strY); MoonZ= Double.valueOf(strZ);
                         MoonR= Double.valueOf(strR);
                         MoonRot= Double.valueOf(strRot);
                         MoonX /=Coef;MoonY /=Coef;MoonZ /=Coef;MoonR /=Coef;
@@ -563,15 +574,14 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     
                     if (strType.compareTo("Sun") == 0)
                     {
-                        SunX = Double.valueOf(strX); SunY= Double.valueOf(strY); SunZ= -Double.valueOf(strZ);
+                        //SunX = Double.valueOf(strX); SunY= Double.valueOf(strY); SunZ= -Double.valueOf(strZ);
+                        SunX = -Double.valueOf(strX); SunY= Double.valueOf(strY); SunZ= Double.valueOf(strZ);
                         SunR= Double.valueOf(strR);
                         SunX /=Coef;SunY /=Coef;SunZ /=Coef;SunR /=Coef;
                     }
                 }
             }
             
-            //NodeList nodeMoonLst = doc.getElementsByTagName("MoonObject");
-            //MoonLines = new LineArray(2*(nodeMoonLst.getLength()-1),LineArray.COORDINATES);
             double  XOld=0;
             double YOld=0;
             double ZOld=0;
@@ -580,48 +590,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             double YNext=0;
             double ZNext=0;
 
-            /*
-            for (int s = 0; s < nodeMoonLst.getLength(); s++) 
-            {
-                Node fstNode = nodeMoonLst.item(s);
-                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
-                {
-                    Element fstElmnt = (Element) fstNode;
-                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
-                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
-                    NodeList fstType = fstTypeElmnt.getChildNodes();
-                    String strType = ((Node) fstType.item(0)).getNodeValue(); // must be MoonTra
-                    
-                    NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");
-                    Element lstXElmnt = (Element) lstXElmntLst.item(0);
-                    NodeList lstX = lstXElmnt.getChildNodes();
-                    String strX = ((Node) lstX.item(0)).getNodeValue();
-                    
-                    NodeList lstYElmntLst = fstElmnt.getElementsByTagName("Z");
-                    Element lstYElmnt = (Element) lstYElmntLst.item(0);
-                    NodeList lstY = lstYElmnt.getChildNodes();
-                    String strY = ((Node) lstY.item(0)).getNodeValue();
-                    
-                    NodeList lstZElmntLst = fstElmnt.getElementsByTagName("Y");
-                    Element lstZElmnt = (Element) lstZElmntLst.item(0);
-                    NodeList lstZ = lstZElmnt.getChildNodes();
-                    String strZ = ((Node) lstZ.item(0)).getNodeValue();
-                    if (XOld == 0)
-                    {
-                        XOld = Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= -Double.valueOf(strZ);
-                        XOld /=Coef;YOld /=Coef;ZOld /=Coef;
-                    }
-                    else
-                    {
-                        XNext = Double.valueOf(strX); YNext= Double.valueOf(strY); ZNext= -Double.valueOf(strZ);
-                        XNext /=Coef;YNext /=Coef;ZNext /=Coef;
-                        MoonLines.setCoordinate((s-1)*2,new Point3f((float)XOld, (float)YOld, (float)ZOld));
-                        MoonLines.setCoordinate((s-1)*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
-                        XOld = XNext; YOld = YNext; ZOld = ZNext;
-                    }
-                }
-            }
-            */
             int iMaxSat = 0;
             for (int iSat=0; iSat<10;iSat++)
             {
@@ -700,12 +668,14 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                             String strZ = ((Node) lstZ.item(0)).getNodeValue();
                             if (XOld == 0)
                             {
-                                XOld = Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= -Double.valueOf(strZ);
+                                //XOld = Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= -Double.valueOf(strZ);
+                                XOld = -Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= Double.valueOf(strZ);
                                 XOld /=Coef;YOld /=Coef;ZOld /=Coef;
                             }
                             else
                             {
-                                XNext = Double.valueOf(strX); YNext= Double.valueOf(strY); ZNext= -Double.valueOf(strZ);
+                                //XNext = Double.valueOf(strX); YNext= Double.valueOf(strY); ZNext= -Double.valueOf(strZ);
+                                XNext = -Double.valueOf(strX); YNext= Double.valueOf(strY); ZNext= Double.valueOf(strZ);
                                 XNext /=Coef;YNext /=Coef;ZNext /=Coef;
                                 if (s <= (iSizeOfElements-1-I2s))
                                 {
@@ -832,6 +802,87 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     delaymsec *= 1000;
                 }
             }
+            int iMaxGrst = 0;
+            nodeLst = doc.getElementsByTagName("GrSt");
+            for (int s = 0; s < nodeLst.getLength(); s++) 
+            {
+                Node fstNode = nodeLst.item(s);
+                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                {
+                    Element fstElmnt = (Element) fstNode;
+                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
+                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                    NodeList fstType = fstTypeElmnt.getChildNodes();
+                    String strType = ((Node) fstType.item(0)).getNodeValue();
+                    
+                    //System.out.println("Type : "  + strType);
+                    NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");//X
+                    Element lstXElmnt = (Element) lstXElmntLst.item(0);
+                    NodeList lstX = lstXElmnt.getChildNodes();
+                    String strX = ((Node) lstX.item(0)).getNodeValue();
+                    //System.out.println("X: " + strX);
+                    
+                    NodeList lstYElmntLst = fstElmnt.getElementsByTagName("Z");//Z
+                    Element lstYElmnt = (Element) lstYElmntLst.item(0);
+                    NodeList lstY = lstYElmnt.getChildNodes();
+                    String strY = ((Node) lstY.item(0)).getNodeValue();
+                   // System.out.println("Y: " + strY);                    
+                    
+                    NodeList lstZElmntLst = fstElmnt.getElementsByTagName("Y");//Y
+                    Element lstZElmnt = (Element) lstZElmntLst.item(0);
+                    NodeList lstZ = lstZElmnt.getChildNodes();
+                    String strZ = ((Node) lstZ.item(0)).getNodeValue();
+                    //System.out.println("Z: " + strZ);                    
+                    
+                    //GrStX[iMaxGrst] = Double.valueOf(strX); GrStY[iMaxGrst]= Double.valueOf(strY); GrStZ[iMaxGrst]= -Double.valueOf(strZ);
+                    GrStX[iMaxGrst] = -Double.valueOf(strX); GrStY[iMaxGrst]= Double.valueOf(strY); GrStZ[iMaxGrst]= Double.valueOf(strZ);
+                    GrStX[iMaxGrst] /=Coef;GrStY[iMaxGrst] /=Coef;GrStZ[iMaxGrst] /=Coef;
+                    // 6 lines : 1 perpendicular + 4 parallel to earth surface and one pointing to Z
+                    GrLines[iMaxGrst] = new LineArray(12,LineArray.COORDINATES); 
+                    // first line perpendicular
+                    GrLines[iMaxGrst].setCoordinate(0,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(1,new Point3f((float)(1.5*GrStX[iMaxGrst]), (float)(1.5*GrStY[iMaxGrst]), (float)(1.5*GrStZ[iMaxGrst])));
+                    // second line to the polar start
+                    GrLines[iMaxGrst].setCoordinate(2,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    if (GrStY[iMaxGrst]>0)
+                        GrLines[iMaxGrst].setCoordinate(3,new Point3f((float)(GrStX[iMaxGrst]), (float)(GrStY[iMaxGrst]+0.5*EarthR), (float)(GrStZ[iMaxGrst])));
+                    else
+                        GrLines[iMaxGrst].setCoordinate(3,new Point3f((float)(GrStX[iMaxGrst]), (float)(GrStY[iMaxGrst]-0.5*EarthR), (float)(GrStZ[iMaxGrst])));
+                    
+                    double u1; double u2; double u3;
+                    double v1; double v2; double v3;
+                    double Xpr; double Ypr; double Zpr;
+                    u1 = GrStX[iMaxGrst];u2 = GrStY[iMaxGrst];u3 = GrStZ[iMaxGrst];
+                    v1 =0; v2 = EarthR ; v3 = 0;
+                    Xpr = u2*v3 - u3*v2;
+                    Ypr = u3*v1 - u1*v3;
+                    Zpr = u1*v2-u2*v1;
+                    double prMod = Math.sqrt(Xpr*Xpr + Ypr*Ypr +Zpr*Zpr);
+                    Xpr/=prMod;Ypr/=prMod;Zpr/=prMod;
+                    // parralel to surface
+                    GrLines[iMaxGrst].setCoordinate(4,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(5,new Point3f((float)(GrStX[iMaxGrst]+Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]+Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]+Zpr*0.5*EarthR)));
+                    
+                    GrLines[iMaxGrst].setCoordinate(6,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(7,new Point3f((float)(GrStX[iMaxGrst]-Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]-Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]-Zpr*0.5*EarthR)));
+                    v1 =Xpr*prMod; v2 = Ypr*prMod ; v3 = Zpr*prMod;
+                    Xpr = u2*v3 - u3*v2;
+                    Ypr = u3*v1 - u1*v3;
+                    Zpr = u1*v2-u2*v1;
+                    prMod = Math.sqrt(Xpr*Xpr + Ypr*Ypr +Zpr*Zpr);
+                    Xpr/=prMod;Ypr/=prMod;Zpr/=prMod;
+                    
+                    GrLines[iMaxGrst].setCoordinate(8,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(9,new Point3f((float)(GrStX[iMaxGrst]+Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]+Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]+Zpr*0.5*EarthR)));
+                    
+                    GrLines[iMaxGrst].setCoordinate(10,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(11,new Point3f((float)(GrStX[iMaxGrst]-Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]-Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]-Zpr*0.5*EarthR)));
+
+                    iMaxGrst++;
+                }
+            }
+            iGrstMax = iMaxGrst;
+
         } 
         catch (Exception e) 
         {  
@@ -849,6 +900,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         try 
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
+            //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
             URL ur = new URL("http://24.84.57.253/SatCtrl/earthsatellitemap.jpg");
             //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/Earth-Color_960_Koord.jpg");
@@ -864,6 +916,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         try 
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
+            //URL ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
             URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
@@ -879,6 +932,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         try 
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
+            //URL ur = new URL("http://192.168.0.102/SatCtrl/SkyMap2.jpg");
             URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/SkyMap2.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
@@ -1033,11 +1087,21 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         LocationEarth.setTranslation(vectorEarth);
         TransformGroup tg = new TransformGroup(LocationEarth);
         tg.addChild(sphEarth);
-        // rotation of the earth
+        // add ground stations
+        Appearance aGrDot = new Appearance();
+        ColoringAttributes GrDotColor = new ColoringAttributes();
+        GrDotColor.setColor(new Color3f(2.0f,2.0f,0f));
+        aGrDot.setColoringAttributes(GrDotColor);
+        for (int iGr=0; iGr <iGrstMax; iGr++)
+        {
+            Shape3D GrDot = new Shape3D(GrLines[iGr]); GrDot.setAppearance(aGrDot);tg.addChild(GrDot);
+        }
+        // then spin the earth
         
             Transform3D m_EarthRotationDelta = new Transform3D();
             m_EarthRotation = new Transform3D();
-            double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
+            //double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
+            double y_angle =  (EarthRot-90) * 3.14159265358979323846264338327950288/ 180;
             EarthRotOld = EarthRot;
             m_EarthRotationDelta.rotY(y_angle);
             Matrix4d mat = new Matrix4d();
@@ -1359,7 +1423,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                 Transform3D m_EarthRotationDelta = new Transform3D();
                                 Transform3D  m_EarthRotation = new Transform3D();
                                 //double y_angle =  (EarthRot-EarthRotOld) * 3.14159265358979323846264338327950288/ 180;
-                                double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
+                                //double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
+                                double y_angle =  (EarthRot-90) * 3.14159265358979323846264338327950288/ 180;
                                 EarthRotOld = EarthRot;
                                 m_EarthRotationDelta.rotY(y_angle);
                                 Matrix4d mat = new Matrix4d();
