@@ -58,12 +58,13 @@ public class visualtra extends Applet
 implements ScaleChangeListener, RotationChangeListener, TranslationChangeListener, ActionListener, Runnable
 {
 
+    //public String URLSOURCE = "http://192.168.0.102/SatCtrl";
+    public String URLSOURCE = "http://24.84.57.253/SatCtrl";
     private double GrStX[] = new double[10];
     private double GrStY[] = new double[10];
     private double GrStZ[] = new double[10];
     private int iGrstMax =0;
     public LineArray GrLines[]= new LineArray[10];
-    
     
     private double CenterX;
     private double CenterY;
@@ -182,6 +183,9 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     public LineArray Sat7Dot= null;
     public LineArray Sat8Dot= null;
     public LineArray Sat9Dot= null;
+    
+    
+    
     int MaxSat = 0;
     ImageComponent2D ImageSkyMap = null;
     Texture texSky;
@@ -495,8 +499,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             long CurMils = System.currentTimeMillis();
             //File fXmlFile = new File("SatCtrl/travisual.xml");  
             
-            //URL url = new URL("http://192.168.0.102/SatCtrl/PostTra.aspx?"+CurMils);
-            URL url = new URL("http://24.84.57.253/SatCtrl/PostTra.aspx?"+CurMils);
+            URL url = new URL(URLSOURCE+"/PostTra.aspx?"+CurMils);
+            //URL url = new URL("http://24.84.57.253/SatCtrl/PostTra.aspx?"+CurMils);
             //URL url = new URL("http://24.84.57.253/SatCtrl/travisual.xml?"+CurMils);
             //URL url = new URL("http://localhost/SatCtrl/PostTra.aspx?"+CurMils);
             
@@ -582,6 +586,87 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                 }
             }
             
+            int iMaxGrst = 0;
+            nodeLst = doc.getElementsByTagName("GrSt");
+            for (int s = 0; s < nodeLst.getLength(); s++) 
+            {
+                Node fstNode = nodeLst.item(s);
+                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                {
+                    Element fstElmnt = (Element) fstNode;
+                    //NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
+                    //Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                    //NodeList fstType = fstTypeElmnt.getChildNodes();
+                    //String strType = ((Node) fstType.item(0)).getNodeValue();
+                    
+                    //System.out.println("Type : "  + strType);
+                    NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");//X
+                    Element lstXElmnt = (Element) lstXElmntLst.item(0);
+                    NodeList lstX = lstXElmnt.getChildNodes();
+                    String strX = ((Node) lstX.item(0)).getNodeValue();
+                    //System.out.println("X: " + strX);
+                    
+                    NodeList lstYElmntLst = fstElmnt.getElementsByTagName("Z");//Z
+                    Element lstYElmnt = (Element) lstYElmntLst.item(0);
+                    NodeList lstY = lstYElmnt.getChildNodes();
+                    String strY = ((Node) lstY.item(0)).getNodeValue();
+                   // System.out.println("Y: " + strY);                    
+                    
+                    NodeList lstZElmntLst = fstElmnt.getElementsByTagName("Y");//Y
+                    Element lstZElmnt = (Element) lstZElmntLst.item(0);
+                    NodeList lstZ = lstZElmnt.getChildNodes();
+                    String strZ = ((Node) lstZ.item(0)).getNodeValue();
+                    //System.out.println("Z: " + strZ);                    
+                    
+                    //GrStX[iMaxGrst] = Double.valueOf(strX); GrStY[iMaxGrst]= Double.valueOf(strY); GrStZ[iMaxGrst]= -Double.valueOf(strZ);
+                    GrStX[iMaxGrst] = -Double.valueOf(strX); GrStY[iMaxGrst]= Double.valueOf(strY); GrStZ[iMaxGrst]= Double.valueOf(strZ);
+                    GrStX[iMaxGrst] /=Coef;GrStY[iMaxGrst] /=Coef;GrStZ[iMaxGrst] /=Coef;
+                    // 6 lines : 1 perpendicular + 4 parallel to earth surface and one pointing to Z
+                    GrLines[iMaxGrst] = new LineArray(12,LineArray.COORDINATES); 
+                    // first line perpendicular
+                    GrLines[iMaxGrst].setCoordinate(0,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(1,new Point3f((float)(1.5*GrStX[iMaxGrst]), (float)(1.5*GrStY[iMaxGrst]), (float)(1.5*GrStZ[iMaxGrst])));
+                    // second line to the polar start
+                    GrLines[iMaxGrst].setCoordinate(2,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    if (GrStY[iMaxGrst]>0)
+                        GrLines[iMaxGrst].setCoordinate(3,new Point3f((float)(GrStX[iMaxGrst]), (float)(GrStY[iMaxGrst]+0.5*EarthR), (float)(GrStZ[iMaxGrst])));
+                    else
+                        GrLines[iMaxGrst].setCoordinate(3,new Point3f((float)(GrStX[iMaxGrst]), (float)(GrStY[iMaxGrst]-0.5*EarthR), (float)(GrStZ[iMaxGrst])));
+                    
+                    double u1; double u2; double u3;
+                    double v1; double v2; double v3;
+                    double Xpr; double Ypr; double Zpr;
+                    u1 = GrStX[iMaxGrst];u2 = GrStY[iMaxGrst];u3 = GrStZ[iMaxGrst];
+                    v1 =0; v2 = EarthR ; v3 = 0;
+                    Xpr = u2*v3 - u3*v2;
+                    Ypr = u3*v1 - u1*v3;
+                    Zpr = u1*v2-u2*v1;
+                    double prMod = Math.sqrt(Xpr*Xpr + Ypr*Ypr +Zpr*Zpr);
+                    Xpr/=prMod;Ypr/=prMod;Zpr/=prMod;
+                    // parralel to surface
+                    GrLines[iMaxGrst].setCoordinate(4,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(5,new Point3f((float)(GrStX[iMaxGrst]+Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]+Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]+Zpr*0.5*EarthR)));
+                    
+                    GrLines[iMaxGrst].setCoordinate(6,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(7,new Point3f((float)(GrStX[iMaxGrst]-Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]-Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]-Zpr*0.5*EarthR)));
+                    v1 =Xpr*prMod; v2 = Ypr*prMod ; v3 = Zpr*prMod;
+                    Xpr = u2*v3 - u3*v2;
+                    Ypr = u3*v1 - u1*v3;
+                    Zpr = u1*v2-u2*v1;
+                    prMod = Math.sqrt(Xpr*Xpr + Ypr*Ypr +Zpr*Zpr);
+                    Xpr/=prMod;Ypr/=prMod;Zpr/=prMod;
+                    
+                    GrLines[iMaxGrst].setCoordinate(8,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(9,new Point3f((float)(GrStX[iMaxGrst]+Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]+Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]+Zpr*0.5*EarthR)));
+                    
+                    GrLines[iMaxGrst].setCoordinate(10,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
+                    GrLines[iMaxGrst].setCoordinate(11,new Point3f((float)(GrStX[iMaxGrst]-Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]-Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]-Zpr*0.5*EarthR)));
+
+                    iMaxGrst++;
+                }
+            }
+            iGrstMax = iMaxGrst;
+            
             double  XOld=0;
             double YOld=0;
             double ZOld=0;
@@ -589,7 +674,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             double XNext=0;
             double YNext=0;
             double ZNext=0;
+            
+            double XGRV=0;
+            double YGRV=0;
+            double ZGRV=0;
 
+            
             int iMaxSat = 0;
             for (int iSat=0; iSat<10;iSat++)
             {
@@ -602,36 +692,16 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     iMaxSat++;
                     switch(iSat)
                     {
-                    case 0:Sat0Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat0Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;
-                    case 1:Sat1Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat1Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;    
-                    case 2:Sat2Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat2Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;
-                    case 3:Sat3Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat3Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;    
-                    case 4:Sat4Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat4Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;
-                    case 5:Sat5Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat5Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;    
-                    case 6:Sat6Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat6Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;
-                    case 7:Sat7Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat7Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;    
-                    case 8:Sat8Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat8Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;
-                    case 9:Sat9Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);
-                        Sat9Dot = new LineArray(I2s*2,LineArray.COORDINATES);
-                        break;    
+                    case 0:Sat0Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;
+                    case 1:Sat1Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;    
+                    case 2:Sat2Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;
+                    case 3:Sat3Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;    
+                    case 4:Sat4Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;
+                    case 5:Sat5Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;    
+                    case 6:Sat6Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;
+                    case 7:Sat7Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;    
+                    case 8:Sat8Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;
+                    case 9:Sat9Lines = new LineArray(2*(iSizeOfElements-1-I2s),LineArray.COORDINATES);break;    
                     }
                     XOld=0;
                     YOld=0;
@@ -640,7 +710,26 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     XNext=0;
                     YNext=0;
                     ZNext=0;
-                    
+                    int iDotsReq = I2s*2;
+                    for (int s = 0; s < iSizeOfElements; s++) 
+                    {
+                        Node fstNode = nodeSatLst.item(s);
+                        if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                        {
+                            Element fstElmnt = (Element) fstNode;
+                            for (int ivGrst = 0; ivGrst <iGrstMax; ivGrst++)
+                            {
+                                String NameElemGrstX = "X"+ivGrst;
+                                NodeList lstXGrElmntLst = fstElmnt.getElementsByTagName(NameElemGrstX);
+                                Element lstXGrElmnt = (Element) lstXGrElmntLst.item(0);
+                                if (lstXGrElmnt != null)
+                                {
+                                    iDotsReq+=2;
+                                }
+                            }
+                        }
+                    }
+                    int count_to_antenna = I2s*2;
                     for (int s = 0; s < iSizeOfElements; s++) 
                     {
                         Node fstNode = nodeSatLst.item(s);
@@ -666,11 +755,26 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                             Element lstZElmnt = (Element) lstZElmntLst.item(0);
                             NodeList lstZ = lstZElmnt.getChildNodes();
                             String strZ = ((Node) lstZ.item(0)).getNodeValue();
+                            
                             if (XOld == 0)
                             {
                                 //XOld = Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= -Double.valueOf(strZ);
                                 XOld = -Double.valueOf(strX); YOld= Double.valueOf(strY); ZOld= Double.valueOf(strZ);
                                 XOld /=Coef;YOld /=Coef;ZOld /=Coef;
+                                // alloocate enought for last 3 min (I2s var) and lines to ground satations
+                                switch(iSat)
+                                {
+                                case 0:Sat0Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;
+                                case 1:Sat1Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;    
+                                case 2:Sat2Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;
+                                case 3:Sat3Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;    
+                                case 4:Sat4Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;
+                                case 5:Sat5Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;    
+                                case 6:Sat6Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;
+                                case 7:Sat7Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;    
+                                case 8:Sat8Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;
+                                case 9:Sat9Dot = new LineArray(iDotsReq,LineArray.COORDINATES);break;    
+                                }
                             }
                             else
                             {
@@ -768,7 +872,82 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                         Sat9Dot.setCoordinate((s-(iSizeOfElements-I2s))*2+1,new Point3f((float)XNext, (float)YNext, (float)ZNext));
                                         break;
                                     }
+                                    
                                 }
+                                    if ((iDotsReq != I2s*2))// && (s == (iSizeOfElements-1)))
+                                    {
+                                        
+                                        for (int ivGrst = 0; ivGrst <iGrstMax; ivGrst++)
+                                        {
+                                            String NameElemXGRV = "X"+ivGrst;
+                                            String NameElemYGRV = "Y"+ivGrst;
+                                            String NameElemZGRV = "Z"+ivGrst;
+                                            NodeList lstXGRVElmntLst = fstElmnt.getElementsByTagName(NameElemXGRV);
+                                            Element lstXGRVElmnt = (Element) lstXGRVElmntLst.item(0);
+                                            if (lstXGRVElmnt != null)
+                                            {
+                                                //Element lstXGRVElmnt = (Element) lstXGRVElmntLst.item(0);
+                                                NodeList lstXGRV = lstXGRVElmnt.getChildNodes();
+                                                String strXGRV = ((Node) lstXGRV.item(0)).getNodeValue();
+                    
+                                                NodeList lstYGRVElmntLst = fstElmnt.getElementsByTagName(NameElemZGRV);
+                                                Element lstYGRVElmnt = (Element) lstYGRVElmntLst.item(0);
+                                                NodeList lstYGRV = lstYGRVElmnt.getChildNodes();
+                                                String strYGRV = ((Node) lstYGRV.item(0)).getNodeValue();
+                    
+                                                NodeList lstZGRVElmntLst = fstElmnt.getElementsByTagName(NameElemYGRV);
+                                                Element lstZGRVElmnt = (Element) lstZGRVElmntLst.item(0);
+                                                NodeList lstZGRV = lstZGRVElmnt.getChildNodes();
+                                                String strZGRV = ((Node) lstZGRV.item(0)).getNodeValue();
+                                                
+                                                XGRV = -Double.valueOf(strXGRV); YGRV= Double.valueOf(strYGRV); ZGRV= Double.valueOf(strZGRV);
+                                                XGRV /=Coef;YGRV /=Coef;ZGRV /=Coef;
+                                                switch(iSat)
+                                                {
+                                                case 0:
+                                                    Sat0Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat0Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 1:
+                                                    Sat1Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat1Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 2:
+                                                    Sat1Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat2Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 3:
+                                                    Sat3Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat3Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 4:
+                                                    Sat4Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat4Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 5:
+                                                    Sat5Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat5Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 6:
+                                                    Sat6Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat6Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 7:
+                                                    Sat7Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat7Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 8:
+                                                    Sat8Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat8Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                case 9:
+                                                    Sat9Dot.setCoordinate(count_to_antenna++,new Point3f((float)XGRV, (float)YGRV, (float)ZGRV));
+                                                    Sat9Dot.setCoordinate(count_to_antenna++,new Point3f((float)XNext, (float)YNext, (float)ZNext));
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
                                 XOld = XNext; YOld = YNext; ZOld = ZNext;
                                 bRet = true;
                             }
@@ -802,86 +981,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                     delaymsec *= 1000;
                 }
             }
-            int iMaxGrst = 0;
-            nodeLst = doc.getElementsByTagName("GrSt");
-            for (int s = 0; s < nodeLst.getLength(); s++) 
-            {
-                Node fstNode = nodeLst.item(s);
-                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
-                {
-                    Element fstElmnt = (Element) fstNode;
-                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("type");
-                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
-                    NodeList fstType = fstTypeElmnt.getChildNodes();
-                    String strType = ((Node) fstType.item(0)).getNodeValue();
-                    
-                    //System.out.println("Type : "  + strType);
-                    NodeList lstXElmntLst = fstElmnt.getElementsByTagName("X");//X
-                    Element lstXElmnt = (Element) lstXElmntLst.item(0);
-                    NodeList lstX = lstXElmnt.getChildNodes();
-                    String strX = ((Node) lstX.item(0)).getNodeValue();
-                    //System.out.println("X: " + strX);
-                    
-                    NodeList lstYElmntLst = fstElmnt.getElementsByTagName("Z");//Z
-                    Element lstYElmnt = (Element) lstYElmntLst.item(0);
-                    NodeList lstY = lstYElmnt.getChildNodes();
-                    String strY = ((Node) lstY.item(0)).getNodeValue();
-                   // System.out.println("Y: " + strY);                    
-                    
-                    NodeList lstZElmntLst = fstElmnt.getElementsByTagName("Y");//Y
-                    Element lstZElmnt = (Element) lstZElmntLst.item(0);
-                    NodeList lstZ = lstZElmnt.getChildNodes();
-                    String strZ = ((Node) lstZ.item(0)).getNodeValue();
-                    //System.out.println("Z: " + strZ);                    
-                    
-                    //GrStX[iMaxGrst] = Double.valueOf(strX); GrStY[iMaxGrst]= Double.valueOf(strY); GrStZ[iMaxGrst]= -Double.valueOf(strZ);
-                    GrStX[iMaxGrst] = -Double.valueOf(strX); GrStY[iMaxGrst]= Double.valueOf(strY); GrStZ[iMaxGrst]= Double.valueOf(strZ);
-                    GrStX[iMaxGrst] /=Coef;GrStY[iMaxGrst] /=Coef;GrStZ[iMaxGrst] /=Coef;
-                    // 6 lines : 1 perpendicular + 4 parallel to earth surface and one pointing to Z
-                    GrLines[iMaxGrst] = new LineArray(12,LineArray.COORDINATES); 
-                    // first line perpendicular
-                    GrLines[iMaxGrst].setCoordinate(0,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
-                    GrLines[iMaxGrst].setCoordinate(1,new Point3f((float)(1.5*GrStX[iMaxGrst]), (float)(1.5*GrStY[iMaxGrst]), (float)(1.5*GrStZ[iMaxGrst])));
-                    // second line to the polar start
-                    GrLines[iMaxGrst].setCoordinate(2,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
-                    if (GrStY[iMaxGrst]>0)
-                        GrLines[iMaxGrst].setCoordinate(3,new Point3f((float)(GrStX[iMaxGrst]), (float)(GrStY[iMaxGrst]+0.5*EarthR), (float)(GrStZ[iMaxGrst])));
-                    else
-                        GrLines[iMaxGrst].setCoordinate(3,new Point3f((float)(GrStX[iMaxGrst]), (float)(GrStY[iMaxGrst]-0.5*EarthR), (float)(GrStZ[iMaxGrst])));
-                    
-                    double u1; double u2; double u3;
-                    double v1; double v2; double v3;
-                    double Xpr; double Ypr; double Zpr;
-                    u1 = GrStX[iMaxGrst];u2 = GrStY[iMaxGrst];u3 = GrStZ[iMaxGrst];
-                    v1 =0; v2 = EarthR ; v3 = 0;
-                    Xpr = u2*v3 - u3*v2;
-                    Ypr = u3*v1 - u1*v3;
-                    Zpr = u1*v2-u2*v1;
-                    double prMod = Math.sqrt(Xpr*Xpr + Ypr*Ypr +Zpr*Zpr);
-                    Xpr/=prMod;Ypr/=prMod;Zpr/=prMod;
-                    // parralel to surface
-                    GrLines[iMaxGrst].setCoordinate(4,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
-                    GrLines[iMaxGrst].setCoordinate(5,new Point3f((float)(GrStX[iMaxGrst]+Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]+Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]+Zpr*0.5*EarthR)));
-                    
-                    GrLines[iMaxGrst].setCoordinate(6,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
-                    GrLines[iMaxGrst].setCoordinate(7,new Point3f((float)(GrStX[iMaxGrst]-Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]-Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]-Zpr*0.5*EarthR)));
-                    v1 =Xpr*prMod; v2 = Ypr*prMod ; v3 = Zpr*prMod;
-                    Xpr = u2*v3 - u3*v2;
-                    Ypr = u3*v1 - u1*v3;
-                    Zpr = u1*v2-u2*v1;
-                    prMod = Math.sqrt(Xpr*Xpr + Ypr*Ypr +Zpr*Zpr);
-                    Xpr/=prMod;Ypr/=prMod;Zpr/=prMod;
-                    
-                    GrLines[iMaxGrst].setCoordinate(8,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
-                    GrLines[iMaxGrst].setCoordinate(9,new Point3f((float)(GrStX[iMaxGrst]+Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]+Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]+Zpr*0.5*EarthR)));
-                    
-                    GrLines[iMaxGrst].setCoordinate(10,new Point3f((float)GrStX[iMaxGrst], (float)GrStY[iMaxGrst], (float)GrStZ[iMaxGrst]));
-                    GrLines[iMaxGrst].setCoordinate(11,new Point3f((float)(GrStX[iMaxGrst]-Xpr*0.5*EarthR), (float)(GrStY[iMaxGrst]-Ypr*0.5*EarthR), (float)(GrStZ[iMaxGrst]-Zpr*0.5*EarthR)));
-
-                    iMaxGrst++;
-                }
-            }
-            iGrstMax = iMaxGrst;
 
         } 
         catch (Exception e) 
@@ -901,7 +1000,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
             //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
-            URL ur = new URL("http://24.84.57.253/SatCtrl/earthsatellitemap.jpg");
+            URL ur = new URL(URLSOURCE+"/earthsatellitemap.jpg");
             //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/earthsatellitemap.jpg");
@@ -917,7 +1016,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
             //URL ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            URL ur = new URL("http://24.84.57.253/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
+            URL ur = new URL(URLSOURCE+"/moon___map_by_horizoied-d3y3lvg.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
             texMoon = texLoader.getTexture();
@@ -933,7 +1032,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
             //URL ur = new URL("http://192.168.0.102/SatCtrl/SkyMap2.jpg");
-            URL ur = new URL("http://24.84.57.253/SatCtrl/SkyMap2.jpg");
+            URL ur = new URL(URLSOURCE+"/SkyMap2.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/SkyMap2.jpg");
             TextureLoader texLoader =  new TextureLoader( ur, this);
             texSky = texLoader.getTexture();
@@ -1079,7 +1178,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         TextureAttributes texAttr = new TextureAttributes();
         texAttr.setTextureMode(TextureAttributes.COMBINE);//.COMBINE);//.BLEND);//.MODULATE);
         a.setTextureAttributes(texAttr);
-	Sphere sphEarth = new Sphere((float)EarthR, Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS, 180, a);//.GENERATE_NORMALS, 180, a);
+	Sphere sphEarth = new Sphere((float)EarthR, Sphere.GENERATE_NORMALS | Sphere.GENERATE_TEXTURE_COORDS, 280, a);//.GENERATE_NORMALS, 180, a);
         
         // position of the earth
         Transform3D LocationEarth = new Transform3D();
@@ -1101,7 +1200,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             Transform3D m_EarthRotationDelta = new Transform3D();
             m_EarthRotation = new Transform3D();
             //double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
-            double y_angle =  (EarthRot-90) * 3.14159265358979323846264338327950288/ 180;
+            //double y_angle =  (EarthRot-90) * 3.14159265358979323846264338327950288/ 180;
+            double y_angle =  (EarthRot) * 3.14159265358979323846264338327950288/ 180;
             EarthRotOld = EarthRot;
             m_EarthRotationDelta.rotY(y_angle);
             Matrix4d mat = new Matrix4d();
@@ -1244,9 +1344,23 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         TransformGroup tgSun = new TransformGroup(LocationSun);
         tgSun.addChild(sphSun);
         //objTrans.addChild(tgSun);
+        
+        Point3f atten = new Point3f(.010f, .0f, .0f);
+        Color3f lColor1   = new Color3f(10.10f, 10.10f, 10.10f);
+        Point3f lSunPoint  = new Point3f((float)(SunX-CenterX), (float)(SunY-CenterY), (float)(SunZ-CenterZ));
+        Light lgtSun = null;
+        Vector3d lPos1 =  new Vector3d((float)(SunX-CenterX), (float)(SunY-CenterY), (float)(SunZ-CenterZ));
+        Vector3f lDirect1 = new Vector3f(lPos1);
+	lDirect1.negate();
+        lgtSun = new DirectionalLight(lColor1, lDirect1);
+        //lgtSun = new PointLight(lColor1, lSunPoint, atten);
+        lgtSun.setInfluencingBounds(bounds);
+	//objTrans.addChild(lgtSun);
+        tgLtSun.addChild(lgtSun);
+        
         tgLtSun.addChild(tgSun);
         objTrans.addChild(tgLtSun);
-  
+        
 	TransformGroup l1RotTrans = new TransformGroup();
 	l1RotTrans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
 	objTrans.addChild(l1RotTrans);
@@ -1257,8 +1371,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 
         Color3f alColor   = new Color3f(.2f, .2f, .2f);
         AmbientLight aLgt = new AmbientLight(alColor);
-	Point3f lSunPoint  = new Point3f((float)(SunX-CenterX), (float)(SunY-CenterY), (float)(SunZ-CenterZ));
-	Point3f atten = new Point3f(.010f, .0f, .0f);
+	
+
         
 	// Create transformations for the positional lights
 	//Transform3D t = new Transform3D();
@@ -1267,14 +1381,14 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	//TransformGroup l1Trans = new TransformGroup(t);
 	//l1RotTrans.addChild(l1Trans);
         // Create Geometry for point lights
-        Color3f lColor1   = new Color3f(.10f, .10f, .10f);
+        
         //ColoringAttributes caL1 = new ColoringAttributes();
         //caL1.setColor(lColor1);
         //Appearance appL1 = new Appearance();
         //appL1.setColoringAttributes(caL1);
         //l1Trans.addChild(new Sphere(0.1f, appL1));
         // Create lights
-        Light lgtSun = null;
+    
 	//Vector3f lDirect1 = new Vector3f(lPos1);
 	//lDirect1.negate();
 
@@ -1297,27 +1411,12 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	//Vector3f lDirect2 = new Vector3f(lPos2);
 	//lDirect2.negate();
 
-        lightType = 	POINT_LIGHT;
-	switch (lightType) {
-	case DIRECTIONAL_LIGHT:
-	    //lgt1 = new DirectionalLight(lColor1, lDirect1);
-	    //lgt2 = new DirectionalLight(lColor2, lDirect2);
-	    break;
-	case POINT_LIGHT:
-	    lgtSun = new PointLight(lColor1, lSunPoint, atten);
-	    //lgt2 = new PointLight(lColor2, lPoint, atten);
-	    break;
-	case SPOT_LIGHT:
-	    //lgt1 = new SpotLight(lColor1, lPoint, atten, lDirect1,
-		//		 25.0f * (float)Math.PI / 180.0f, 10.0f);
-	    //lgt2 = new SpotLight(lColor2, lPoint, atten, lDirect2,
-            //			 25.0f * (float)Math.PI / 180.0f, 10.0f);
-	    break;
-	}
+        
 
 	// Set the influencing bounds
 	aLgt.setInfluencingBounds(bounds);
-	lgtSun.setInfluencingBounds(bounds);
+        
+	
 	//lgt2.setInfluencingBounds(bounds);
 
 	// Add the lights into the scene graph
@@ -1325,7 +1424,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         //tgLtSun.addChild(lgtSun);
         //objTrans.addChild(tgLtSun);
 	objTrans.addChild(aLgt);
-	objTrans.addChild(lgtSun);
+
+        
 	//l2Trans.addChild(lgt2);
         
         objTrans1.addChild(objTrans);
@@ -1376,6 +1476,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                  TimerCount++;
                  if (ReadXML())
                  {
+                    CenterX=EarthX;CenterY=EarthY;CenterZ=EarthZ;
                     TransformGroup tg = getTransformEarthMoon();
                     if (tg != null) 
                     {        
@@ -1424,7 +1525,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                 Transform3D  m_EarthRotation = new Transform3D();
                                 //double y_angle =  (EarthRot-EarthRotOld) * 3.14159265358979323846264338327950288/ 180;
                                 //double y_angle =  (EarthRot+90) * 3.14159265358979323846264338327950288/ 180;
-                                double y_angle =  (EarthRot-90) * 3.14159265358979323846264338327950288/ 180;
+                                //double y_angle =  (EarthRot-90) * 3.14159265358979323846264338327950288/ 180;
+                                double y_angle =  (EarthRot) * 3.14159265358979323846264338327950288/ 180;
                                 EarthRotOld = EarthRot;
                                 m_EarthRotationDelta.rotY(y_angle);
                                 Matrix4d mat = new Matrix4d();
@@ -1485,49 +1587,6 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                                     case 9:SatTra9 = new BranchGroup();SatTra9.setCapability(BranchGroup.ALLOW_DETACH);  SatTra9.addChild(new Shape3D(Sat9Lines));SatDot = new Shape3D(Sat9Dot);SatDot.setAppearance(aSatDot);SatTra9.addChild(SatDot);tg.addChild(SatTra9);break;
                                     }
                                 }
-                                //if (obj == SatTra)
-                                //{
-                                //    tg.removeChild(nIndex);
-                                //    SatTra = new BranchGroup();  
-                                //    SatTra.setCapability(BranchGroup.ALLOW_DETACH);  
-                                //    for (int iSat=0; iSat<MaxSat;iSat++)
-                                //    {
-                                //        switch(iSat)
-                                //        {
-                                //        case 0:SatTra.addChild(new Shape3D(Sat0Lines));break;
-                                //        case 1:SatTra.addChild(new Shape3D(Sat1Lines));break;
-                                //        case 2:SatTra.addChild(new Shape3D(Sat2Lines));break;
-                                //        case 3:SatTra.addChild(new Shape3D(Sat3Lines));break;
-                                //        case 4:SatTra.addChild(new Shape3D(Sat4Lines));break;
-                                //        case 5:SatTra.addChild(new Shape3D(Sat5Lines));break;
-                                //        case 6:SatTra.addChild(new Shape3D(Sat6Lines));break;
-                                //        case 7:SatTra.addChild(new Shape3D(Sat7Lines));break;
-                                //        case 8:SatTra.addChild(new Shape3D(Sat8Lines));break;
-                                //        case 9:SatTra.addChild(new Shape3D(Sat9Lines));break;
-                                //        }
-                                //        Appearance aSatDot = new Appearance();
-                                //        ColoringAttributes SatDotColor = new ColoringAttributes();
-                                //        SatDotColor.setColor(new Color3f(2.0f,0f,0f));
-                                //        aSatDot.setColoringAttributes(SatDotColor);
-                                //        Shape3D SatDot = null;
-                                //        switch(iSat)
-                                //        {
-                                //        case 0:SatDot = new Shape3D(Sat0Dot); break;
-                                //        case 1:SatDot = new Shape3D(Sat1Dot); break;
-                                //        case 2:SatDot = new Shape3D(Sat2Dot); break;
-                                //        case 3:SatDot = new Shape3D(Sat3Dot); break;
-                                //        case 4:SatDot = new Shape3D(Sat4Dot); break;
-                                //        case 5:SatDot = new Shape3D(Sat5Dot); break;
-                                //        case 6:SatDot = new Shape3D(Sat6Dot); break;
-                                //        case 7:SatDot = new Shape3D(Sat7Dot); break;
-                                //        case 8:SatDot = new Shape3D(Sat8Dot); break;
-                                //        case 9:SatDot = new Shape3D(Sat9Dot); break;
-                                //        }
-                                //        SatDot.setAppearance(aSatDot); //objTrans.addChild(SatDot);
-                                //        SatTra.addChild(SatDot);
-                                //    }
-                                //    tg.addChild(SatTra);
-                                //    break;
                                 nIndex++;
                             }
                         }
