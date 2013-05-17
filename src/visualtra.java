@@ -58,8 +58,8 @@ public class visualtra extends Applet
 implements ScaleChangeListener, RotationChangeListener, TranslationChangeListener, ActionListener, Runnable
 {
 
-    //public String URLSOURCE = "http://192.168.0.102/SatCtrl";
-    public String URLSOURCE = "http://24.84.57.253/SatCtrl";
+    public String URLSOURCE = "http://192.168.0.102/SatCtrl";
+    //public String URLSOURCE = "http://24.84.57.253/SatCtrl";
     private double GrStX[] = new double[10];
     private double GrStY[] = new double[10];
     private double GrStZ[] = new double[10];
@@ -212,6 +212,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     Label m_LabelYYMMDDHHMMSS=null;
     long delaymsec = 1000;
     long Olddelaymsec = 1000;
+    long dMinFromNow = 3;
     
     
     
@@ -387,11 +388,16 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
 	BoundingSphere bounds =  new BoundingSphere(new Point3d(0.0,0.0,0.0), 1000.0);
         
         // Set up the background
-	Background bg = new Background(bgColor);
+	
                 
-        bg.setImage(ImageSkyMap);
-	bg.setApplicationBounds(bounds);
-	objScale.addChild(bg);
+        if (ImageSkyMap != null)
+        {
+            Background bg = new Background(bgColor);
+            bg.setImage(ImageSkyMap);
+            bg.setApplicationBounds(bounds);
+            objScale.addChild(bg);
+        }
+        
 
 	// Create the transform group node for the each light and initialize
 	// it to the identity.  Enable the TRANSFORM_WRITE capability so that
@@ -667,6 +673,38 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             }
             iGrstMax = iMaxGrst;
             
+            nodeLst = doc.getElementsByTagName("ObjectTime");
+            for (int s = 0; s < nodeLst.getLength(); s++) 
+            {
+                Node fstNode = nodeLst.item(s);
+                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
+                {
+                    Element fstElmnt = (Element) fstNode;
+                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("timeJD");
+                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
+                    NodeList fstType = fstTypeElmnt.getChildNodes();
+                    String strTimeJD = ((Node) fstType.item(0)).getNodeValue();
+                    TimeJD = Double.valueOf(strTimeJD);
+                    
+                    NodeList fstDElmntLst = fstElmnt.getElementsByTagName("timeYYDDMMHHMMSS");
+                    Element fstDElmnt = (Element) fstDElmntLst.item(0);
+                    NodeList fstD = fstDElmnt.getChildNodes();
+                    TimeYYMMDDHHMMSS = ((Node) fstD.item(0)).getNodeValue();
+                    
+                    NodeList fstReloadElmntLst = fstElmnt.getElementsByTagName("ReloadInSec");
+                    Element fstReloadElmnt = (Element) fstReloadElmntLst.item(0);
+                    NodeList fstReload = fstReloadElmnt.getChildNodes();
+                    delaymsec = Long.valueOf(((Node) fstReload.item(0)).getNodeValue());
+                    delaymsec *= 1000;
+                    
+                    NodeList fstMNElmntLst = fstElmnt.getElementsByTagName("dMinFromNow");
+                    Element fstMNElmnt = (Element) fstMNElmntLst.item(0);
+                    NodeList fstMN = fstMNElmnt.getChildNodes();
+                    dMinFromNow = Long.valueOf(((Node) fstMN.item(0)).getNodeValue());
+                    
+                }
+            }
+            
             double  XOld=0;
             double YOld=0;
             double ZOld=0;
@@ -683,7 +721,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
             int iMaxSat = 0;
             for (int iSat=0; iSat<10;iSat++)
             {
-                int I2s = 3;
+                int I2s = (int)dMinFromNow;
                 String NameObject = "Sat"+iSat;
                 NodeList nodeSatLst = doc.getElementsByTagName(NameObject);
                 int iSizeOfElements = nodeSatLst.getLength();
@@ -956,31 +994,7 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
                 }
             }
             MaxSat = iMaxSat;
-            nodeLst = doc.getElementsByTagName("ObjectTime");
-            for (int s = 0; s < nodeLst.getLength(); s++) 
-            {
-                Node fstNode = nodeLst.item(s);
-                if (fstNode.getNodeType() == Node.ELEMENT_NODE) 
-                {
-                    Element fstElmnt = (Element) fstNode;
-                    NodeList fstTypeElmntLst = fstElmnt.getElementsByTagName("timeJD");
-                    Element fstTypeElmnt = (Element) fstTypeElmntLst.item(0);
-                    NodeList fstType = fstTypeElmnt.getChildNodes();
-                    String strTimeJD = ((Node) fstType.item(0)).getNodeValue();
-                    TimeJD = Double.valueOf(strTimeJD);
-                    
-                    NodeList fstDElmntLst = fstElmnt.getElementsByTagName("timeYYDDMMHHMMSS");
-                    Element fstDElmnt = (Element) fstDElmntLst.item(0);
-                    NodeList fstD = fstDElmnt.getChildNodes();
-                    TimeYYMMDDHHMMSS = ((Node) fstD.item(0)).getNodeValue();
-                    
-                    NodeList fstReloadElmntLst = fstElmnt.getElementsByTagName("ReloadInSec");
-                    Element fstReloadElmnt = (Element) fstReloadElmntLst.item(0);
-                    NodeList fstReload = fstReloadElmnt.getChildNodes();
-                    delaymsec = Long.valueOf(((Node) fstReload.item(0)).getNodeValue());
-                    delaymsec *= 1000;
-                }
-            }
+            
 
         } 
         catch (Exception e) 
@@ -992,19 +1006,26 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
     }
     public void init() 
     {
+        String mURLSOURCE = this.getParameter("URLSOURCE");
+        String GetStarmap = this.getParameter("STARMAP");
+        if (mURLSOURCE != null)
+            URLSOURCE = mURLSOURCE;
         while(ReadXML()==false)
         {
+            
         }
         CenterX=EarthX;CenterY=EarthY;CenterZ=EarthZ;
         try 
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/Earth-Color_960_Koord.jpg", this);
             //URL ur = new URL("http://192.168.0.102/SatCtrl/Earth-Color_960_Koord.jpg");
-            URL ur = new URL(URLSOURCE+"/earthsatellitemap.jpg");
+            //URL ur = new URL(URLSOURCE+"/earthsatellitemap.jpg");
             //URL ur = new URL("http://24.84.57.253/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/Earth-Color_960_Koord.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/earthsatellitemap.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
+            
+            TextureLoader texLoader =  new TextureLoader( this.getClass().getResource("earthsatellitemap.jpg"), this);
             texEarth = texLoader.getTexture();
         }
         catch (Exception e) 
@@ -1016,9 +1037,10 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg", this);
             //URL ur = new URL("http://192.168.0.102/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            URL ur = new URL(URLSOURCE+"/moon___map_by_horizoied-d3y3lvg.jpg");
+            //URL ur = new URL(URLSOURCE+"/moon___map_by_horizoied-d3y3lvg.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/moon___map_by_horizoied-d3y3lvg.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
+            TextureLoader texLoader =  new TextureLoader( this.getClass().getResource("moon___map_by_horizoied-d3y3lvg.jpg"), this);
             texMoon = texLoader.getTexture();
         
             //URL myURl = URL("http://192.168.0.102/SatCtrl/Map_Earth_2100_by_JamesVF.jpg");
@@ -1032,11 +1054,15 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         {
             //TextureLoader texLoader =  new TextureLoader( "SatCtrl/SkyMap2.jpg", this);
             //URL ur = new URL("http://192.168.0.102/SatCtrl/SkyMap2.jpg");
-            URL ur = new URL(URLSOURCE+"/SkyMap2.jpg");
+            //URL ur = new URL(URLSOURCE+"/SkyMap2.jpg");
             //URL ur = new URL("http://localhost/SatCtrl/SkyMap2.jpg");
-            TextureLoader texLoader =  new TextureLoader( ur, this);
-            texSky = texLoader.getTexture();
-            ImageSkyMap = texLoader.getImage();
+            //TextureLoader texLoader =  new TextureLoader( ur, this);
+            if (GetStarmap != null)
+            {
+                TextureLoader texLoader =  new TextureLoader( this.getClass().getResource("SkyMap2.jpg"), this);
+                texSky = texLoader.getTexture();
+                ImageSkyMap = texLoader.getImage();
+            }
         } 
         catch (Exception e) 
         {  
@@ -1072,7 +1098,8 @@ implements ScaleChangeListener, RotationChangeListener, TranslationChangeListene
         // Set up the background
 	Background bg = new Background(bgColor);
                 
-        //bg.setImage(ImageSkyMap);
+        //if (ImageSkyMap != null)
+        //    bg.setImage(ImageSkyMap);
         //bg.setImageScaleMode(Background.SCALE_FIT_ALL);
 	bg.setApplicationBounds(bounds);
 	
